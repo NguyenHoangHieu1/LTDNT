@@ -104,7 +104,7 @@ const MainScreen = ({ navigation }: any) => {
       onPress={() => console.log(`Selected build: ${item.name}`)}
     >
       <LinearGradient
-        colors={categories[index % categories.length].color}
+        colors={categories[index % categories.length].color as [string, string, ...string[]]}
         style={styles.buildGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}

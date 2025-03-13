@@ -1,12 +1,25 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+// import { Link } from 'expo-router';
 import { Drawer } from 'expo-router/drawer';
 
-import { HeaderButton } from '../../components/HeaderButton';
+// import { HeaderButton } from '~/components/HeaderButton';
+import Colors from '~/utils/Colors';
 
 const DrawerLayout = () => {
   return (
-    <Drawer>
+    <Drawer
+      screenOptions={{
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: Colors.bg_dark,
+        },
+        headerTintColor: Colors.white,
+        drawerStyle: {
+          backgroundColor: Colors.bg_dark,
+        },
+        drawerActiveTintColor: Colors.primary,
+        drawerInactiveTintColor: Colors.white,
+      }}>
       <Drawer.Screen
         name="index"
         options={{
@@ -20,16 +33,14 @@ const DrawerLayout = () => {
       <Drawer.Screen
         name="(tabs)"
         options={{
-          headerTitle: 'Tabs',
-          drawerLabel: 'Tabs',
-          drawerIcon: ({ size, color }) => (
-            <MaterialIcons name="border-bottom" size={size} color={color} />
-          ),
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <HeaderButton />
-            </Link>
-          ),
+          headerTitle: 'PC Builder',
+          drawerLabel: 'PC Builder',
+          drawerIcon: ({ size, color }) => <MaterialIcons name="build" size={size} color={color} />,
+          // headerRight: () => (
+          //   <Link href="/modal" asChild>
+          //     <HeaderButton />
+          //   </Link>
+          // ),
         }}
       />
     </Drawer>
