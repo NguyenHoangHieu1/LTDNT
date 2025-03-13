@@ -7,13 +7,11 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
-  Dimensions,
   StatusBar,
   FlatList,
 } from 'react-native';
+import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width } = Dimensions.get('window');
 
 // Sample data for categories
 const categories = [
@@ -29,7 +27,14 @@ const categories = [
 
 // Sample data for featured products
 const featuredProducts = [
-  { id: '1', name: 'NVIDIA RTX 3050', type: 'Graphics Card', price: '$249', image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0jKlHyWoB3HOv2qnniF7OplneySjzx.png' },
+  {
+    id: '1',
+    name: 'NVIDIA RTX 3050',
+    type: 'Graphics Card',
+    price: '$249',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0jKlHyWoB3HOv2qnniF7OplneySjzx.png',
+  },
   { id: '2', name: 'AMD Ryzen 7 5800X', type: 'Processor', price: '$299', image: null },
   { id: '3', name: 'ASUS ROG Strix B550-F', type: 'Motherboard', price: '$179', image: null },
   { id: '4', name: 'Corsair Vengeance RGB Pro 32GB', type: 'Memory', price: '$129', image: null },
@@ -51,40 +56,35 @@ const recentBuilds = [
 ];
 
 const MainScreen = ({ navigation }: any) => {
-  const [activeTab, setActiveTab] = useState('Home');
-
-  const renderCategoryItem = ({ item }:any) => (
-    <TouchableOpacity 
+  const renderCategoryItem = ({ item }: any) => (
+    <TouchableOpacity
       style={styles.categoryItem}
-      onPress={() => console.log(`Selected category: ${item.name}`)}
-    >
+      onPress={() => console.log(`Selected category: ${item.name}`)}>
       <LinearGradient
         colors={item.color}
         style={styles.categoryGradient}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+        end={{ x: 1, y: 1 }}>
         <Text style={styles.categoryIcon}>{item.icon}</Text>
         <Text style={styles.categoryName}>{item.name}</Text>
       </LinearGradient>
     </TouchableOpacity>
   );
 
-  const renderProductItem = (item:any, index:any) => (
-    <TouchableOpacity 
+  const renderProductItem = (item: any, index: any) => (
+    <TouchableOpacity
       key={item.id}
       style={styles.productItem}
-      onPress={() => console.log(`Selected product: ${item.name}`)}
-    >
+      onPress={() => console.log(`Selected product: ${item.name}`)}>
       <View style={styles.productImageContainer}>
         {item.image ? (
-          <Image
-            source={{ uri: item.image }}
-            style={styles.productImage}
-            resizeMode="contain"
-          />
+          <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
         ) : (
-          <View style={[styles.productImagePlaceholder, { backgroundColor: categories[index % categories.length].color[0] }]}>
+          <View
+            style={[
+              styles.productImagePlaceholder,
+              { backgroundColor: categories[index % categories.length].color[0] },
+            ]}>
             <Text style={styles.productImagePlaceholderText}>{item.type.charAt(0)}</Text>
           </View>
         )}
@@ -97,18 +97,16 @@ const MainScreen = ({ navigation }: any) => {
     </TouchableOpacity>
   );
 
-  const renderBuildItem = (item:any, index:any) => (
-    <TouchableOpacity 
+  const renderBuildItem = (item: any, index: any) => (
+    <TouchableOpacity
       key={item.id}
       style={styles.buildItem}
-      onPress={() => console.log(`Selected build: ${item.name}`)}
-    >
+      onPress={() => console.log(`Selected build: ${item.name}`)}>
       <LinearGradient
         colors={categories[index % categories.length].color as [string, string, ...string[]]}
         style={styles.buildGradient}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+        end={{ x: 1, y: 1 }}>
         <View style={styles.buildContent}>
           <Text style={styles.buildName}>{item.name}</Text>
           <Text style={styles.buildCreator}>by {item.creator}</Text>
@@ -124,7 +122,7 @@ const MainScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      
+
       <View style={styles.header}>
         <Text style={styles.headerTitle}>PC Builder</Text>
         <View style={styles.headerActions}>
@@ -136,107 +134,96 @@ const MainScreen = ({ navigation }: any) => {
           </TouchableOpacity>
         </View>
       </View>
-      
+
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>Build Your Dream PC</Text>
-          <Text style={styles.welcomeSubtitle}>Browse parts, create builds, and share with the community</Text>
+          <Text style={styles.welcomeSubtitle}>
+            Browse parts, create builds, and share with the community
+          </Text>
         </View>
-        
+
         <View style={styles.categoriesSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Categories</Text>
             <TouchableOpacity>
-              <Text style={styles.sectionAction}>See All</Text>
+              <Text
+                style={styles.sectionAction}
+                onPress={() => router.push('/(stack)/(tabs)/home/list_product')}>
+                See All
+              </Text>
             </TouchableOpacity>
           </View>
-          
+
           <FlatList
             data={categories}
             renderItem={renderCategoryItem}
-            keyExtractor={item => item.id}
+            keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesList}
           />
         </View>
-        
+
         <View style={styles.featuredSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Products</Text>
             <TouchableOpacity>
-              <Text style={styles.sectionAction}>See All</Text>
+              <Text
+                style={styles.sectionAction}
+                onPress={() => router.push('/(stack)/(tabs)/home/list_product')}>
+                See All
+              </Text>
             </TouchableOpacity>
           </View>
-          
-          <ScrollView 
-            horizontal 
+
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.productsList}
-          >
+            contentContainerStyle={styles.productsList}>
             {featuredProducts.map((item, index) => renderProductItem(item, index))}
           </ScrollView>
         </View>
-        
+
         <View style={styles.trendingSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Trending Now</Text>
             <TouchableOpacity>
-              <Text style={styles.sectionAction}>See All</Text>
+              <Text
+                style={styles.sectionAction}
+                onPress={() => router.push('/(stack)/(tabs)/home/list_product')}>
+                See All
+              </Text>
             </TouchableOpacity>
           </View>
-          
-          <ScrollView 
-            horizontal 
+
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.productsList}
-          >
+            contentContainerStyle={styles.productsList}>
             {trendingProducts.map((item, index) => renderProductItem(item, index))}
           </ScrollView>
         </View>
-        
+
         <View style={styles.buildsSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Builds</Text>
             <TouchableOpacity>
-              <Text style={styles.sectionAction}>See All</Text>
+              <Text
+                style={styles.sectionAction}
+                onPress={() => router.push('/(stack)/(tabs)/home/list_product')}>
+                See All
+              </Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.buildsList}>
             {recentBuilds.map((item, index) => renderBuildItem(item, index))}
           </View>
         </View>
-        
+
         <View style={styles.spacer} />
       </ScrollView>
-      
-      <View style={styles.navigationBar}>
-        <TouchableOpacity 
-          style={[styles.navButton, activeTab === 'Home' && styles.activeNavButton]}
-          onPress={() => setActiveTab('Home')}
-        >
-          <Text style={styles.navButtonText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.navButton, activeTab === 'Build' && styles.activeNavButton]}
-          onPress={() => setActiveTab('Build')}
-        >
-          <Text style={styles.navButtonText}>Build</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.navButton, activeTab === 'Compare' && styles.activeNavButton]}
-          onPress={() => setActiveTab('Compare')}
-        >
-          <Text style={styles.navButtonText}>Compare</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.navButton, activeTab === 'Profile' && styles.activeNavButton]}
-          onPress={() => setActiveTab('Profile')}
-        >
-          <Text style={styles.navButtonText}>Profile</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -439,26 +426,6 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: 20,
-  },
-  navigationBar: {
-    flexDirection: 'row',
-    backgroundColor: '#222222',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#333333',
-  },
-  navButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  activeNavButton: {
-    backgroundColor: '#FF7675',
-  },
-  navButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
 

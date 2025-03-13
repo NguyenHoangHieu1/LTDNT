@@ -10,6 +10,7 @@ import {
   StatusBar,
   TextInput,
 } from 'react-native';
+import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Filter, Search } from 'react-native-feather';
 
@@ -23,7 +24,8 @@ const gpuData = [
     specs: '8GB GDDR6, 2560 CUDA Cores',
     rating: 4.3,
     reviews: 128,
-    image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0jKlHyWoB3HOv2qnniF7OplneySjzx.png',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0jKlHyWoB3HOv2qnniF7OplneySjzx.png',
     inStock: true,
   },
   {
@@ -183,7 +185,7 @@ const categories = {
     color: ['#FF7675', '#D63031'],
     icon: '🎮',
   },
-  'Processors': {
+  Processors: {
     title: 'Processors',
     data: cpuData,
     color: ['#74B9FF', '#0984E3'],
@@ -191,45 +193,41 @@ const categories = {
   },
 };
 
-const CategoryScreen = ({ route, navigation }:any) => {
+const CategoryScreen = ({ route, navigation }: any) => {
   // In a real app, you would get the category from route.params
   // For this example, we'll default to 'Graphics Cards'
   const categoryName = route?.params?.category || 'Graphics Cards';
   //@ts-ignore
   const category = categories[categoryName];
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [viewType, setViewType] = useState('grid'); // 'grid' or 'list'
-  
+
   // Filter options
   const filterOptions = ['All', 'In Stock', 'NVIDIA', 'AMD'];
-  
+
   // Filter products based on search and active filter
-  const filteredProducts = category.data.filter((product:any) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          product.brand.toLowerCase().includes(searchQuery.toLowerCase());
-    
+  const filteredProducts = category.data.filter((product: any) => {
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.brand.toLowerCase().includes(searchQuery.toLowerCase());
+
     if (activeFilter === 'All') return matchesSearch;
     if (activeFilter === 'In Stock') return matchesSearch && product.inStock;
     if (activeFilter === 'NVIDIA') return matchesSearch && product.name.includes('NVIDIA');
     if (activeFilter === 'AMD') return matchesSearch && product.name.includes('AMD');
-    
+
     return matchesSearch;
   });
-  
-  const renderProductItem = ({ item }:any) => (
-    <TouchableOpacity 
+
+  const renderProductItem = ({ item }: any) => (
+    <TouchableOpacity
       style={viewType === 'grid' ? styles.gridItem : styles.listItem}
-      onPress={() => console.log(`Selected product: ${item.name}`)}
-    >
+      onPress={() => console.log(`Selected product: ${item.name}`)}>
       <View style={viewType === 'grid' ? styles.gridImageContainer : styles.listImageContainer}>
         {item.image ? (
-          <Image
-            source={{ uri: item.image }}
-            style={styles.productImage}
-            resizeMode="contain"
-          />
+          <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
         ) : (
           <View style={[styles.productImagePlaceholder, { backgroundColor: category.color[0] }]}>
             <Text style={styles.productImagePlaceholderText}>{item.brand.charAt(0)}</Text>
@@ -241,49 +239,49 @@ const CategoryScreen = ({ route, navigation }:any) => {
           </View>
         )}
       </View>
-      
+
       <View style={viewType === 'grid' ? styles.gridProductInfo : styles.listProductInfo}>
         <Text style={styles.productBrand}>{item.brand}</Text>
-        <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
-        <Text style={styles.productSpecs} numberOfLines={1}>{item.specs}</Text>
-        
+        <Text style={styles.productName} numberOfLines={2}>
+          {item.name}
+        </Text>
+        <Text style={styles.productSpecs} numberOfLines={1}>
+          {item.specs}
+        </Text>
+
         <View style={styles.productRating}>
           <Text style={styles.ratingText}>★ {item.rating}</Text>
           <Text style={styles.reviewCount}>({item.reviews})</Text>
         </View>
-        
+
         <Text style={styles.productPrice}>{item.price}</Text>
       </View>
     </TouchableOpacity>
   );
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => console.log('Go back')}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ChevronLeft stroke="#FFFFFF" width={24} height={24} />
         </TouchableOpacity>
-        
+
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>{category.title}</Text>
           <Text style={styles.headerSubtitle}>{filteredProducts.length} products</Text>
         </View>
-        
+
         <View style={styles.headerActions}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.viewToggleButton}
-            onPress={() => setViewType(viewType === 'grid' ? 'list' : 'grid')}
-          >
+            onPress={() => setViewType(viewType === 'grid' ? 'list' : 'grid')}>
             <Text style={styles.viewToggleText}>{viewType === 'grid' ? '📋' : '📱'}</Text>
           </TouchableOpacity>
         </View>
       </View>
-      
+
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <Search stroke="#AAAAAA" width={20} height={20} style={styles.searchIcon} />
@@ -295,18 +293,18 @@ const CategoryScreen = ({ route, navigation }:any) => {
             onChangeText={setSearchQuery}
           />
         </View>
-        
+
         <TouchableOpacity style={styles.filterButton}>
           <Filter stroke="#FFFFFF" width={20} height={20} />
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.sortButton}>
           <Text style={styles.filterOptionText}>Sort</Text>
-          
+
           {/* <SortAsc stroke="#FFFFFF" width={20} height={20} /> */}
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.filterOptionsContainer}>
         <FlatList
           data={filterOptions}
@@ -317,16 +315,11 @@ const CategoryScreen = ({ route, navigation }:any) => {
             <TouchableOpacity
               style={[
                 styles.filterOptionButton,
-                activeFilter === item && styles.activeFilterButton
+                activeFilter === item && styles.activeFilterButton,
               ]}
-              onPress={() => setActiveFilter(item)}
-            >
-              <Text 
-                style={[
-                  styles.filterOptionText,
-                  activeFilter === item && styles.activeFilterText
-                ]}
-              >
+              onPress={() => setActiveFilter(item)}>
+              <Text
+                style={[styles.filterOptionText, activeFilter === item && styles.activeFilterText]}>
                 {item}
               </Text>
             </TouchableOpacity>
@@ -334,11 +327,11 @@ const CategoryScreen = ({ route, navigation }:any) => {
           contentContainerStyle={styles.filterOptionsList}
         />
       </View>
-      
+
       <FlatList
         data={filteredProducts}
         renderItem={renderProductItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         numColumns={viewType === 'grid' ? 2 : 1}
         key={viewType} // Force re-render when view type changes
         contentContainerStyle={styles.productsList}
@@ -350,21 +343,6 @@ const CategoryScreen = ({ route, navigation }:any) => {
           </View>
         }
       />
-      
-      <View style={styles.navigationBar}>
-        <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navButtonText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navButton, styles.activeNavButton]}>
-          <Text style={styles.navButtonText}>Build</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navButtonText}>Compare</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navButtonText}>Profile</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -601,26 +579,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#AAAAAA',
     textAlign: 'center',
-  },
-  navigationBar: {
-    flexDirection: 'row',
-    backgroundColor: '#222222',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#333333',
-  },
-  navButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  activeNavButton: {
-    backgroundColor: '#FF7675',
-  },
-  navButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
 

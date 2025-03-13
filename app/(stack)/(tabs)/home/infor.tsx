@@ -40,24 +40,23 @@ const Index = () => {
             <Text style={styles.notificationIcon}>🔔</Text>
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.cardContainer}>
-          <LinearGradient
-            colors={['#333333', '#222222']}
-            style={styles.cardGradient}
-          >
+          <LinearGradient colors={['#333333', '#222222']} style={styles.cardGradient}>
             <Image
-              source={{ uri: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0jKlHyWoB3HOv2qnniF7OplneySjzx.png' }}
+              source={{
+                uri: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0jKlHyWoB3HOv2qnniF7OplneySjzx.png',
+              }}
               style={styles.productImage}
               resizeMode="contain"
             />
-            
+
             <View style={styles.productInfo}>
               <Text style={styles.productName}>NVIDIA RTX 3050</Text>
               <Text style={styles.productDescription}>
                 Entry-level ray tracing GPU with 8GB GDDR6 memory
               </Text>
-              
+
               <View style={styles.specContainer}>
                 <View style={styles.specItem}>
                   <Text style={styles.specValue}>2560</Text>
@@ -72,17 +71,20 @@ const Index = () => {
                   <Text style={styles.specLabel}>GDDR6</Text>
                 </View>
               </View>
-              
+
               <TouchableOpacity style={styles.detailsButton}>
                 <Text style={styles.detailsButtonText}>View Details</Text>
               </TouchableOpacity>
             </View>
           </LinearGradient>
         </View>
-        
+
         <View style={styles.recommendedSection}>
           <Text style={styles.sectionTitle}>Recommended For You</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.recommendedScroll}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.recommendedScroll}>
             {['RTX 4060', 'RTX 3060 Ti', 'RTX 4070'].map((item, index) => (
               <View key={index} style={styles.recommendedItem}>
                 <View style={styles.recommendedImageContainer}>
@@ -94,21 +96,6 @@ const Index = () => {
           </ScrollView>
         </View>
       </ScrollView>
-      
-      <View style={styles.navigationBar}>
-        <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navButtonText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navButton, styles.activeNavButton]}>
-          <Text style={styles.navButtonText}>Build</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navButtonText}>Compare</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Text style={styles.navButtonText}>Profile</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -239,26 +226,6 @@ const styles = StyleSheet.create({
   recommendedName: {
     fontSize: 14,
     color: '#FFFFFF',
-    fontWeight: '500',
-  },
-  navigationBar: {
-    flexDirection: 'row',
-    backgroundColor: '#222222',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#333333',
-  },
-  navButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  activeNavButton: {
-    backgroundColor: '#FF7675',
-  },
-  navButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
     fontWeight: '500',
   },
 });
