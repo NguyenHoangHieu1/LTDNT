@@ -73,6 +73,8 @@ const MainScreen = ({ navigation }: any) => {
 
   const renderProductItem = (item: any, index: any) => (
     <TouchableOpacity
+  const renderProductItem = (item: any, index: any) => (
+    <TouchableOpacity
       key={item.id}
       style={styles.productItem}
       onPress={() => console.log(`Selected product: ${item.name}`)}>
@@ -99,6 +101,8 @@ const MainScreen = ({ navigation }: any) => {
 
   const renderBuildItem = (item: any, index: any) => (
     <TouchableOpacity
+  const renderBuildItem = (item: any, index: any) => (
+    <TouchableOpacity
       key={item.id}
       style={styles.buildItem}
       onPress={() => console.log(`Selected build: ${item.name}`)}>
@@ -123,6 +127,7 @@ const MainScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
+
       <View style={styles.header}>
         <Text style={styles.headerTitle}>PC Builder</Text>
         <View style={styles.headerActions}>
@@ -135,6 +140,7 @@ const MainScreen = ({ navigation }: any) => {
         </View>
       </View>
 
+
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>Build Your Dream PC</Text>
@@ -142,6 +148,7 @@ const MainScreen = ({ navigation }: any) => {
             Browse parts, create builds, and share with the community
           </Text>
         </View>
+
 
         <View style={styles.categoriesSection}>
           <View style={styles.sectionHeader}>
@@ -155,6 +162,7 @@ const MainScreen = ({ navigation }: any) => {
             </TouchableOpacity>
           </View>
 
+
           <FlatList
             data={categories}
             renderItem={renderCategoryItem}
@@ -164,6 +172,7 @@ const MainScreen = ({ navigation }: any) => {
             contentContainerStyle={styles.categoriesList}
           />
         </View>
+
 
         <View style={styles.featuredSection}>
           <View style={styles.sectionHeader}>
@@ -179,11 +188,15 @@ const MainScreen = ({ navigation }: any) => {
 
           <ScrollView
             horizontal
+
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.productsList}>
             {featuredProducts.map((item, index) => renderProductItem(item, index))}
           </ScrollView>
         </View>
+
 
         <View style={styles.trendingSection}>
           <View style={styles.sectionHeader}>
@@ -199,11 +212,15 @@ const MainScreen = ({ navigation }: any) => {
 
           <ScrollView
             horizontal
+
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.productsList}>
             {trendingProducts.map((item, index) => renderProductItem(item, index))}
           </ScrollView>
         </View>
+
 
         <View style={styles.buildsSection}>
           <View style={styles.sectionHeader}>
@@ -217,10 +234,12 @@ const MainScreen = ({ navigation }: any) => {
             </TouchableOpacity>
           </View>
 
+
           <View style={styles.buildsList}>
             {recentBuilds.map((item, index) => renderBuildItem(item, index))}
           </View>
         </View>
+
 
         <View style={styles.spacer} />
       </ScrollView>
