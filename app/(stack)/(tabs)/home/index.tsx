@@ -73,8 +73,6 @@ const MainScreen = ({ navigation }: any) => {
 
   const renderProductItem = (item: any, index: any) => (
     <TouchableOpacity
-  const renderProductItem = (item: any, index: any) => (
-    <TouchableOpacity
       key={item.id}
       style={styles.productItem}
       onPress={() => console.log(`Selected product: ${item.name}`)}>
@@ -99,8 +97,6 @@ const MainScreen = ({ navigation }: any) => {
     </TouchableOpacity>
   );
 
-  const renderBuildItem = (item: any, index: any) => (
-    <TouchableOpacity
   const renderBuildItem = (item: any, index: any) => (
     <TouchableOpacity
       key={item.id}
@@ -188,9 +184,6 @@ const MainScreen = ({ navigation }: any) => {
 
           <ScrollView
             horizontal
-
-          <ScrollView
-            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.productsList}>
             {featuredProducts.map((item, index) => renderProductItem(item, index))}
@@ -209,9 +202,6 @@ const MainScreen = ({ navigation }: any) => {
               </Text>
             </TouchableOpacity>
           </View>
-
-          <ScrollView
-            horizontal
 
           <ScrollView
             horizontal

@@ -194,7 +194,6 @@ const categories = {
 };
 
 const CategoryScreen = ({ route, navigation }: any) => {
-const CategoryScreen = ({ route, navigation }: any) => {
   // In a real app, you would get the category from route.params
   // For this example, we'll default to 'Graphics Cards'
   const categoryName = route?.params?.category || 'Graphics Cards';
@@ -225,9 +224,6 @@ const CategoryScreen = ({ route, navigation }: any) => {
 
     return matchesSearch;
   });
-
-  const renderProductItem = ({ item }: any) => (
-    <TouchableOpacity
 
   const renderProductItem = ({ item }: any) => (
     <TouchableOpacity
@@ -288,7 +284,6 @@ const CategoryScreen = ({ route, navigation }: any) => {
 
 
         <View style={styles.headerActions}>
-          <TouchableOpacity
           <TouchableOpacity
             style={styles.viewToggleButton}
             onPress={() => setViewType(viewType === 'grid' ? 'list' : 'grid')}>
