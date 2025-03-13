@@ -301,7 +301,7 @@ const CategoryScreen = ({ route, navigation }:any) => {
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.sortButton}>
-          Sort
+          <Text style={styles.filterOptionText}>Sort</Text>
           
           {/* <SortAsc stroke="#FFFFFF" width={20} height={20} /> */}
         </TouchableOpacity>
