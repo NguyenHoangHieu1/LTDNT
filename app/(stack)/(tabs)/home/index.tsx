@@ -10,8 +10,10 @@ import {
   StatusBar,
   FlatList,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigationStore } from '~/libs/stateChangePage';
+import { pcComponents } from '~/data/pcComponents';
 
 // Sample data for categories
 const categories = [
@@ -25,37 +27,9 @@ const categories = [
   { id: '8', name: 'Cooling', icon: '❄️', color: ['#81ECEC', '#00CEC9'] },
 ];
 
-// Sample data for featured products
-const featuredProducts = [
-  {
-    id: '1',
-    name: 'NVIDIA RTX 3050',
-    type: 'Graphics Card',
-    price: '$249',
-    image:
-      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0jKlHyWoB3HOv2qnniF7OplneySjzx.png',
-  },
-  { id: '2', name: 'AMD Ryzen 7 5800X', type: 'Processor', price: '$299', image: null },
-  { id: '3', name: 'ASUS ROG Strix B550-F', type: 'Motherboard', price: '$179', image: null },
-  { id: '4', name: 'Corsair Vengeance RGB Pro 32GB', type: 'Memory', price: '$129', image: null },
-];
-
-// Sample data for trending products
-const trendingProducts = [
-  { id: '1', name: 'NVIDIA RTX 4070', type: 'Graphics Card', price: '$599', image: null },
-  { id: '2', name: 'Intel Core i7-13700K', type: 'Processor', price: '$409', image: null },
-  { id: '3', name: 'Samsung 990 Pro 2TB', type: 'SSD', price: '$199', image: null },
-  { id: '4', name: 'NZXT H510 Flow', type: 'Case', price: '$89', image: null },
-];
-
-// Sample data for recent builds
-const recentBuilds = [
-  { id: '1', name: 'Gaming Beast', creator: 'TechGuru', parts: 8, likes: 245 },
-  { id: '2', name: 'Budget Workstation', creator: 'PCMaster', parts: 6, likes: 187 },
-  { id: '3', name: 'Streaming Setup', creator: 'StreamerPro', parts: 7, likes: 321 },
-];
 
 const MainScreen = ({ navigation }: any) => {
+  const navigationStore = useNavigationStore.getState()
   const renderCategoryItem = ({ item }: any) => (
     <TouchableOpacity
       style={styles.categoryItem}
@@ -71,31 +45,37 @@ const MainScreen = ({ navigation }: any) => {
     </TouchableOpacity>
   );
 
-  const renderProductItem = (item: any, index: any) => (
-    <TouchableOpacity
-      key={item.id}
-      style={styles.productItem}
-      onPress={() => console.log(`Selected product: ${item.name}`)}>
-      <View style={styles.productImageContainer}>
-        {item.image ? (
-          <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
-        ) : (
-          <View
-            style={[
-              styles.productImagePlaceholder,
-              { backgroundColor: categories[index % categories.length].color[0] },
-            ]}>
-            <Text style={styles.productImagePlaceholderText}>{item.type.charAt(0)}</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productType}>{item.type}</Text>
-        <Text style={styles.productPrice}>{item.price}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderProductItem = (item: any, index: any) => {
+    const router = useRouter();
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={styles.productItem}
+        onPress={() => {
+          navigationStore.setData('product', item);
+          router.navigate('/home/product_detail')
+        }}>
+        <View style={styles.productImageContainer}>
+          {item.image ? (
+            <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
+          ) : (
+            <View
+              style={[
+                styles.productImagePlaceholder,
+                { backgroundColor: categories[index % categories.length].color[0] },
+              ]}>
+              <Text style={styles.productImagePlaceholderText}>{item.type.charAt(0)}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.productInfo}>
+          <Text style={styles.productName}>{item.name}</Text>
+          <Text style={styles.productType}>{item.type}</Text>
+          <Text style={styles.productPrice}>{item.price}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
 
   const renderBuildItem = (item: any, index: any) => (
     <TouchableOpacity
@@ -186,7 +166,7 @@ const MainScreen = ({ navigation }: any) => {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.productsList}>
-            {featuredProducts.map((item, index) => renderProductItem(item, index))}
+            {pcComponents.map((item, index) => renderProductItem(item, index))}
           </ScrollView>
         </View>
 
@@ -207,7 +187,7 @@ const MainScreen = ({ navigation }: any) => {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.productsList}>
-            {trendingProducts.map((item, index) => renderProductItem(item, index))}
+            {pcComponents.map((item, index) => renderProductItem(item, index))}
           </ScrollView>
         </View>
 
@@ -226,7 +206,7 @@ const MainScreen = ({ navigation }: any) => {
 
 
           <View style={styles.buildsList}>
-            {recentBuilds.map((item, index) => renderBuildItem(item, index))}
+            {pcComponents.map((item, index) => renderBuildItem(item, index))}
           </View>
         </View>
 
