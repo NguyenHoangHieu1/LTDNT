@@ -2,13 +2,19 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaView, Alert } from "react-native"
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaView, Alert, Modal, TextInput } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 // import { useNavigation } from "@react-navigation/native"
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack"
 // import type { RootStackParamList } from "../types"
 import { useRouter } from 'expo-router';
 import type { ComponentType, TPcComponent } from "../../../../data/pcComponents"
+import { COLORS } from "~/theme/colors"
+import { usePcComponentStore } from '~/data/usePcComponentStore';
+import { PcBuild } from "~/data/usePcBuilds"
+import { usePcBuildStore } from "~/data/usePcBuilds"
+import { nanoid } from 'nanoid/non-secure'
+
 
 type PCBuilderScreenProps = {
   route: {
@@ -26,16 +32,19 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   const [totalPrice, setTotalPrice] = useState(0)
   const [compatibilityIssues, setCompatibilityIssues] = useState<string[]>([])
   const router = useRouter();
+  const components = usePcComponentStore((state) => state.components)
+  const getComponentByType = usePcComponentStore((state) => state.getComponentByType)
+  const removeComponentByType = usePcComponentStore((state) => state.removeComponent)
+  const totalcost = usePcComponentStore((state) => state.getTotalPrice)
+  const getAllComponents = usePcComponentStore((state) => state.getAllComponents)
+  const allComponents = getAllComponents()
+  const clearComponents = usePcComponentStore((state) => state.clearComponents)
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [buildName, setBuildName] = useState("")
+  const addBuild = usePcBuildStore((state) => state.addBuild)
+  const crtBuild = usePcBuildStore((state) => state.getCurrentBuild)
+  const currentBuild = crtBuild()
 
-  // Add component from route params if available
-  // useEffect(() => {
-  //   if (route.params?.selectedComponent) {
-  //     const component = route.params.selectedComponent
-  //     addComponent(component)
-  //   }
-  // }, [route.params?.selectedComponent])
-
-  // Calculate total price whenever selected components change
   useEffect(() => {
     let total = 0
     Object.values(selectedComponents).forEach((component) => {
@@ -55,11 +64,7 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   }
 
   const removeComponent = (type: ComponentType) => {
-    setSelectedComponents((prev) => {
-      const newComponents = { ...prev }
-      delete newComponents[type]
-      return newComponents
-    })
+    removeComponentByType(type)
   }
 
   const checkCompatibility = () => {
@@ -102,12 +107,17 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   const navigateToComponentSelection = (type: ComponentType) => {
     // navigation.navigate("ComponentList", { componentType: type })
     // @ts-ignore
-    router.navigate("/", { id: 1 })
+    console.log(type)
+    router.push({ pathname: "/(stack)/(tabs)/build/list_prd_base_categories", params: { type: JSON.stringify(type) } })
   }
 
   const renderComponentItem = (type: ComponentType, title: string) => {
-    const component = selectedComponents[type]
-
+    let component = null
+    if (currentBuild) {
+      component = currentBuild.components.find(comp => comp.type === type)
+    } else {
+      component = getComponentByType(type)
+    }
     return (
       <TouchableOpacity style={styles.componentCard} onPress={() => navigateToComponentSelection(type)}>
         <View style={styles.componentHeader}>
@@ -129,7 +139,7 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
           </View>
         ) : (
           <View style={styles.emptyComponent}>
-            <Ionicons name="add-circle" size={40} color="#0084C8" />
+            <Ionicons name="add-circle" size={40} color={COLORS.MainBlue} />
             <Text style={styles.emptyComponentText}>Select {title}</Text>
           </View>
         )}
@@ -139,7 +149,7 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
 
   const handleCompleteBuild = () => {
     const requiredComponents: ComponentType[] = ["CPU", "Motherboard", "RAM", "Storage", "PowerSupply"]
-    const missingComponents = requiredComponents.filter((type) => !selectedComponents[type])
+    const missingComponents = requiredComponents.filter((type) => !allComponents.some((comp) => comp.type === type))
 
     if (missingComponents.length > 0) {
       Alert.alert("Incomplete Build", `Please select the following components: ${missingComponents.join(", ")}`, [
@@ -154,14 +164,42 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
         { text: "Proceed", onPress: () => completeBuild() },
       ])
     } else {
-      completeBuild()
+      setIsModalVisible(true)
     }
   }
 
   const completeBuild = () => {
-    Alert.alert("Build Complete!", `Your PC build has been saved. Total cost: $${totalPrice.toFixed(2)}`, [
-      { text: "OK", onPress: () => router.navigate("/") },
-    ])
+    if (!buildName.trim()) {
+      Alert.alert("Error", "Please enter a build name")
+      return
+    }
+
+    // Lưu build với tên buildName
+    Alert.alert(
+      "Build Saved!",
+      `Your PC build "${buildName}" has been saved!`,
+      [{
+        text: "OK", onPress: () => {
+          setIsModalVisible(false)
+          const id = nanoid()
+          const build: PcBuild = {
+            id: id,
+            name: buildName,
+            components: allComponents
+          }
+          console.log(build)
+          addBuild(build)
+          clearComponents()
+          setBuildName("")
+          router.navigate("/")
+        }
+      }]
+    )
+  }
+
+  const handleBack = () => {
+    setIsModalVisible(false)
+    setBuildName("")
   }
 
   return (
@@ -201,17 +239,101 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
       <View style={styles.footer}>
         <View style={styles.totalContainer}>
           <Text style={styles.totalLabel}>Total:</Text>
-          <Text style={styles.totalPrice}>${totalPrice.toFixed(2)}</Text>
+          <Text style={styles.totalPrice}>${totalcost().toFixed(2)}</Text>
         </View>
         <TouchableOpacity style={styles.completeButton} onPress={handleCompleteBuild}>
           <Text style={styles.completeButtonText}>Complete Build</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal cho popup */}
+      <Modal
+        visible={isModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleBack}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Name Your Build</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter build name"
+              value={buildName}
+              onChangeText={setBuildName}
+              autoFocus
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.backButtonModal]}
+                onPress={handleBack}
+              >
+                <Text style={styles.modalButtonText}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={completeBuild}
+              >
+                <Text style={styles.modalButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 20,
+    width: "80%",
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 20,
+    fontSize: 16,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  modalButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  backButtonModal: {
+    backgroundColor: "#666",
+  },
+  saveButton: {
+    backgroundColor: "#00b16a",
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f4f4f4",
@@ -315,7 +437,7 @@ const styles = StyleSheet.create({
   },
   emptyComponentText: {
     marginTop: 10,
-    color: "#0084C8",
+    color: COLORS.MainBlue,
     fontWeight: "500",
   },
   footer: {
@@ -337,10 +459,10 @@ const styles = StyleSheet.create({
   totalPrice: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#0084C8",
+    color: "#000",
   },
   completeButton: {
-    backgroundColor: "#0084C8",
+    backgroundColor: "#00b16a",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",

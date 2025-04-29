@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   Image,
   StyleSheet,
   TouchableOpacity,
+  Animated,
+  Dimensions,
+  TouchableWithoutFeedback,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -14,408 +17,239 @@ import { router, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigationStore } from '~/libs/stateChangePage';
 import { pcComponents } from '~/data/pcComponents';
+import { NavigationContainer } from "@react-navigation/native"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import { Menu, Search, Home, Settings, User, HelpCircle, Info } from "react-native-feather"
+import { Logo, Tool, Product } from '~/assets/icon';
 
 // Sample data for categories
-const categories = [
-  { id: '1', name: 'Graphics Cards', icon: '🎮', color: ['#FF7675', '#D63031'] },
-  { id: '2', name: 'Processors', icon: '⚡', color: ['#74B9FF', '#0984E3'] },
-  { id: '3', name: 'Motherboards', icon: '🔌', color: ['#55EFC4', '#00B894'] },
-  { id: '4', name: 'Memory (RAM)', icon: '💾', color: ['#A29BFE', '#6C5CE7'] },
-  { id: '5', name: 'Storage', icon: '💿', color: ['#FAB1A0', '#E17055'] },
-  { id: '6', name: 'Power Supplies', icon: '⚡', color: ['#FFD166', '#F0932B'] },
-  { id: '7', name: 'Cases', icon: '📦', color: ['#FFEAA7', '#FDCB6E'] },
-  { id: '8', name: 'Cooling', icon: '❄️', color: ['#81ECEC', '#00CEC9'] },
-];
-
+const { width } = Dimensions.get("window")
+const DRAWER_WIDTH = width * 0.75
 
 const MainScreen = ({ navigation }: any) => {
+  const [overlayOpacity, setOverlayOpacity] = useState(0.1); // ban đầu mờ 50%
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current
   const navigationStore = useNavigationStore.getState()
-  const renderCategoryItem = ({ item }: any) => (
-    <TouchableOpacity
-      style={styles.categoryItem}
-      onPress={() => console.log(`Selected category: ${item.name}`)}>
-      <LinearGradient
-        colors={item.color}
-        style={styles.categoryGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}>
-        <Text style={styles.categoryIcon}>{item.icon}</Text>
-        <Text style={styles.categoryName}>{item.name}</Text>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
+  const router = useRouter();
 
-  const renderProductItem = (item: any, index: any) => {
-    const router = useRouter();
-    return (
-      <TouchableOpacity
-        key={item.id}
-        style={styles.productItem}
-        onPress={() => {
-          navigationStore.setData('product', item);
-          router.navigate('/home/product_detail')
-        }}>
-        <View style={styles.productImageContainer}>
-          {item.image ? (
-            <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
-          ) : (
-            <View
-              style={[
-                styles.productImagePlaceholder,
-                { backgroundColor: categories[index % categories.length].color[0] },
-              ]}>
-              <Text style={styles.productImagePlaceholderText}>{item.type.charAt(0)}</Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.productInfo}>
-          <Text style={styles.productName}>{item.name}</Text>
-          <Text style={styles.productType}>{item.type}</Text>
-          <Text style={styles.productPrice}>{item.price}</Text>
-        </View>
-      </TouchableOpacity>
-    );
+  const menuItems = [
+    { name: "Build", icon: Tool, screen: "/build" },
+    { name: "Products", icon: Product, screen: '/(stack)/(tabs)/home/list_product' },
+    { name: "Compare", icon: Settings, screen: "Settings" },
+    { name: "Profile", icon: User, screen: "/profile" },
+    { name: "About", icon: Info, screen: "About" },
+  ]
+
+  const navigateToScreen = (screenName: any) => {
+    toggleDrawer()
+    router.push(screenName)
   }
 
-  const renderBuildItem = (item: any, index: any) => (
-    <TouchableOpacity
-      key={item.id}
-      style={styles.buildItem}
-      onPress={() => console.log(`Selected build: ${item.name}`)}>
-      <LinearGradient
-        colors={categories[index % categories.length].color as [string, string, ...string[]]}
-        style={styles.buildGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}>
-        <View style={styles.buildContent}>
-          <Text style={styles.buildName}>{item.name}</Text>
-          <Text style={styles.buildCreator}>by {item.creator}</Text>
-          <View style={styles.buildStats}>
-            <Text style={styles.buildStatText}>{item.parts} parts</Text>
-            <Text style={styles.buildStatText}>❤️ {item.likes}</Text>
-          </View>
-        </View>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
+  const toggleDrawer = () => {
+    if (drawerOpen) {
+      // Khi chuẩn bị đóng: đổi màu overlay về trong suốt trước
+      setOverlayOpacity(0); // <-- Ngay lập tức đổi màu
+
+      // Rồi mới đóng drawer
+      Animated.timing(slideAnim, {
+        toValue: -DRAWER_WIDTH,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setDrawerOpen(false));
+    } else {
+      // Mở drawer
+      setDrawerOpen(true);
+      setOverlayOpacity(0.5); // <-- Khi mở, cho overlay lại mờ 50%
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }
+
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
 
-
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>PC Builder</Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Text style={styles.iconButtonText}>🔍</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Text style={styles.iconButtonText}>🔔</Text>
+        <TouchableOpacity onPress={toggleDrawer} style={styles.iconContainer}>
+          <Menu stroke="#000" width={24} height={24} />
+        </TouchableOpacity>
+
+        <View style={styles.logoContainer}>
+          <Logo stroke="#000" width={32} height={32} />
+        </View>
+
+        <TouchableOpacity style={styles.iconContainer}>
+          <Search stroke="#000" width={24} height={24} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
+      <View style={styles.content}>
+        <View style={styles.centerContent}>
+          <Text style={styles.mainTitle}>Pick Parts. Build Your PC. Compare and Share.</Text>
+          <Text style={styles.subTitle}>
+            We provide part selection, pricing, and compatibility guidance for do-it-yourself computer builders.
+          </Text>
+          <TouchableOpacity style={styles.startButton} onPress={() => router.push("/build")}>
+            <Text style={styles.startButtonText}>🔧 Start Your Build</Text>
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* Drawer Overlay */}
+      {drawerOpen && (
+        <TouchableWithoutFeedback onPress={toggleDrawer}>
+          <View style={[styles.overlay, { backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` }]} />
+        </TouchableWithoutFeedback>
+      )}
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Build Your Dream PC</Text>
-          <Text style={styles.welcomeSubtitle}>
-            Browse parts, create builds, and share with the community
-          </Text>
+      {/* Drawer */}
+      <Animated.View style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
+        <View style={styles.drawerHeader}>
+          <Text style={styles.drawerTitle}>Menu</Text>
         </View>
 
-
-        <View style={styles.categoriesSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
-            <TouchableOpacity>
-              <Text
-                style={styles.sectionAction}
-                onPress={() => router.push('/(stack)/(tabs)/home/list_product')}>
-                See All
-              </Text>
+        <View style={styles.drawerContent}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity key={index} style={styles.menuItem} onPress={() => navigateToScreen(item.screen)}>
+              <item.icon stroke="#333" width={20} height={20} />
+              <Text style={styles.menuItemText}>{item.name}</Text>
             </TouchableOpacity>
-          </View>
-
-
-          <FlatList
-            data={categories}
-            renderItem={renderCategoryItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesList}
-          />
+          ))}
         </View>
-
-
-        <View style={styles.featuredSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Products</Text>
-            <TouchableOpacity>
-              <Text
-                style={styles.sectionAction}
-                onPress={() => router.push('/(stack)/(tabs)/home/list_product')}>
-                See All
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.productsList}>
-            {pcComponents.map((item, index) => renderProductItem(item, index))}
-          </ScrollView>
-        </View>
-
-
-        <View style={styles.trendingSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Trending Now</Text>
-            <TouchableOpacity>
-              <Text
-                style={styles.sectionAction}
-                onPress={() => router.push('/(stack)/(tabs)/home/list_product')}>
-                See All
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.productsList}>
-            {pcComponents.map((item, index) => renderProductItem(item, index))}
-          </ScrollView>
-        </View>
-
-
-        <View style={styles.buildsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Builds</Text>
-            <TouchableOpacity>
-              <Text
-                style={styles.sectionAction}
-                onPress={() => router.push('/(stack)/(tabs)/home/list_product')}>
-                See All
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-
-          <View style={styles.buildsList}>
-            {pcComponents.map((item, index) => renderBuildItem(item, index))}
-          </View>
-        </View>
-
-
-        <View style={styles.spacer} />
-      </ScrollView>
+      </Animated.View>
     </SafeAreaView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: "#fff",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    height: 60,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#333333',
+    borderBottomColor: "#eee",
   },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
+  iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#333333',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  iconButtonText: {
+  logoContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoText: {
     fontSize: 18,
+    fontWeight: "bold",
   },
-  scrollView: {
+  content: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  welcomeSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 25,
-  },
-  welcomeTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  welcomeSubtitle: {
+  contentText: {
     fontSize: 16,
-    color: '#AAAAAA',
-    lineHeight: 22,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 15,
+  overlay: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: width,
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    zIndex: 1,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+  drawer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: DRAWER_WIDTH,
+    backgroundColor: "#fff",
+    zIndex: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 2,
+      height: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  sectionAction: {
-    fontSize: 14,
-    color: '#FF7675',
-    fontWeight: '500',
-  },
-  categoriesSection: {
-    marginTop: 10,
-    marginBottom: 25,
-  },
-  categoriesList: {
-    paddingLeft: 20,
-    paddingRight: 10,
-  },
-  categoryItem: {
-    width: 120,
-    height: 100,
-    marginRight: 10,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  categoryGradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-  },
-  categoryIcon: {
-    fontSize: 24,
-    marginBottom: 8,
-  },
-  categoryName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
-  featuredSection: {
-    marginBottom: 25,
-  },
-  trendingSection: {
-    marginBottom: 25,
-  },
-  productsList: {
-    paddingLeft: 20,
-    paddingRight: 10,
-  },
-  productItem: {
-    width: 160,
-    marginRight: 15,
-    backgroundColor: '#2A2A2A',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  productImageContainer: {
+  drawerHeader: {
     height: 120,
-    backgroundColor: '#333333',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "flex-end",
+    padding: 20,
+    backgroundColor: "#f5f5f5",
   },
-  productImage: {
-    width: '100%',
-    height: '100%',
+  drawerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
   },
-  productImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+  drawerContent: {
+    flex: 1,
+    paddingTop: 20,
   },
-  productImagePlaceholderText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  productInfo: {
-    padding: 12,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  productType: {
-    fontSize: 12,
-    color: '#AAAAAA',
-    marginBottom: 6,
-  },
-  productPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FF7675',
-  },
-  buildsSection: {
-    marginBottom: 25,
-  },
-  buildsList: {
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
     paddingHorizontal: 20,
   },
-  buildItem: {
-    height: 100,
-    marginBottom: 15,
-    borderRadius: 12,
-    overflow: 'hidden',
+  menuItemText: {
+    fontSize: 16,
+    marginLeft: 15,
   },
-  buildGradient: {
+  screenContainer: {
     flex: 1,
-    padding: 15,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  buildContent: {
-    flex: 1,
-    justifyContent: 'space-between',
+  centerContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
   },
-  buildName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+  mainTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 10,
   },
-  buildCreator: {
+  subTitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 20,
   },
-  buildStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  startButton: {
+    backgroundColor: "#3498db",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
   },
-  buildStatText: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    fontWeight: '500',
+  startButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
-  spacer: {
-    height: 20,
-  },
-});
+
+})
+
+
 
 export default MainScreen;

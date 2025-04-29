@@ -8,6 +8,12 @@ const BuildLayout = () => {
         name="index"
         options={{ headerTitle: "Build", headerShown: false }}
       />
+      <Stack.Screen
+        name="list_prd_base_categories"
+        options={{
+          headerShown: false, // Ẩn toàn bộ header
+        }}
+      />
     </Stack>
   );
 };

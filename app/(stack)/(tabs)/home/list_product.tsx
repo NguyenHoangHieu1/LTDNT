@@ -13,19 +13,30 @@ import {
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Filter, Search } from 'react-native-feather';
+import { COLORS } from '~/theme/colors';
+import { Ionicons } from "@expo/vector-icons"
+import { pcComponents } from '~/data/pcComponents';
 
 // Sample data for GPUs
 const gpuData = [
   {
-    id: '1',
-    name: 'NVIDIA RTX 3050',
-    brand: 'Gigabyte',
-    price: '$249',
-    specs: '8GB GDDR6, 2560 CUDA Cores',
-    rating: 4.3,
-    reviews: 128,
-    image:
-      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0jKlHyWoB3HOv2qnniF7OplneySjzx.png',
+    id: "cpu-1",
+    type: "CPU",
+    name: "Intel Core i9-13900K",
+    description:
+      "High-end desktop processor with 24 cores (8P+16E) and 32 threads, perfect for gaming and content creation.",
+    price: 599.99,
+    rating: 5,
+    image: "https://placeholder.svg?height=300&width=300",
+    specs: {
+      cores: "24 (8P+16E)",
+      threads: "32",
+      baseFrequency: "3.0 GHz",
+      boostFrequency: "5.8 GHz",
+      socket: "LGA 1700",
+      tdp: "125W",
+    },
+    compatibility: ["Intel 600 series motherboards", "Intel 700 series motherboards", "DDR5 memory"],
     inStock: true,
   },
   {
@@ -193,6 +204,9 @@ const categories = {
   },
 };
 
+// Định nghĩa màu của header
+const HEADER_COLORS = COLORS.MainBlue; // Gradient xanh dương nhạt đến đậm
+
 const CategoryScreen = ({ route, navigation }: any) => {
   // In a real app, you would get the category from route.params
   // For this example, we'll default to 'Graphics Cards'
@@ -200,15 +214,12 @@ const CategoryScreen = ({ route, navigation }: any) => {
   //@ts-ignore
   const category = categories[categoryName];
 
-
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [viewType, setViewType] = useState('grid'); // 'grid' or 'list'
 
-
   // Filter options
   const filterOptions = ['All', 'In Stock', 'NVIDIA', 'AMD'];
-
 
   // Filter products based on search and active filter
   const filteredProducts = category.data.filter((product: any) => {
@@ -221,7 +232,6 @@ const CategoryScreen = ({ route, navigation }: any) => {
     if (activeFilter === 'NVIDIA') return matchesSearch && product.name.includes('NVIDIA');
     if (activeFilter === 'AMD') return matchesSearch && product.name.includes('AMD');
 
-
     return matchesSearch;
   });
 
@@ -233,7 +243,7 @@ const CategoryScreen = ({ route, navigation }: any) => {
         {item.image ? (
           <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
         ) : (
-          <View style={[styles.productImagePlaceholder, { backgroundColor: category.color[0] }]}>
+          <View style={[styles.productImagePlaceholder, { backgroundColor: HEADER_COLORS[0] }]}>
             <Text style={styles.productImagePlaceholderText}>{item.brand.charAt(0)}</Text>
           </View>
         )}
@@ -244,80 +254,76 @@ const CategoryScreen = ({ route, navigation }: any) => {
         )}
       </View>
 
-
       <View style={viewType === 'grid' ? styles.gridProductInfo : styles.listProductInfo}>
         <Text style={styles.productBrand}>{item.brand}</Text>
         <Text style={styles.productName} numberOfLines={2}>
           {item.name}
         </Text>
         <Text style={styles.productSpecs} numberOfLines={1}>
-          {item.specs}
+          {/* {item.specs} */}
+          {Object.entries(item.specs)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(' ')}
         </Text>
 
         <View style={styles.productRating}>
-          <Text style={styles.ratingText}>★ {item.rating}</Text>
-          <Text style={styles.reviewCount}>({item.reviews})</Text>
         </View>
 
-
-        <Text style={styles.productPrice}>{item.price}</Text>
+        <View style={styles.priceAndAddContainer}>
+          <Text style={styles.productPrice}>{item.price}</Text>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => console.log(`Added product: ${item.name}`)}>
+            <Text style={styles.addButtonText}>Add</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </TouchableOpacity>
   );
-
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ChevronLeft stroke="#FFFFFF" width={24} height={24} />
+          <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
 
-
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>{category.title}</Text>
-          <Text style={styles.headerSubtitle}>{filteredProducts.length} products</Text>
+          <Text style={styles.headerTitle}>Products</Text>
         </View>
 
-
-        <View style={styles.headerActions}>
+        {/* <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.viewToggleButton}
             onPress={() => setViewType(viewType === 'grid' ? 'list' : 'grid')}>
             <Text style={styles.viewToggleText}>{viewType === 'grid' ? '📋' : '📱'}</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
-
 
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
-          <Search stroke="#AAAAAA" width={20} height={20} style={styles.searchIcon} />
+          <Search stroke="#666666" width={20} height={20} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search graphics cards..."
-            placeholderTextColor="#AAAAAA"
+            placeholderTextColor="#666666"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
 
-
         <TouchableOpacity style={styles.filterButton}>
-          <Filter stroke="#FFFFFF" width={20} height={20} />
+          <Filter stroke="#000000" width={20} height={20} />
         </TouchableOpacity>
-
 
         <TouchableOpacity style={styles.sortButton}>
           <Text style={styles.filterOptionText}>Sort</Text>
-
-          {/* <SortAsc stroke="#FFFFFF" width={20} height={20} /> */}
+          {/* <SortAsc stroke="#000000" width={20} height={20} /> */}
         </TouchableOpacity>
       </View>
-
 
       <View style={styles.filterOptionsContainer}>
         <FlatList
@@ -342,9 +348,8 @@ const CategoryScreen = ({ route, navigation }: any) => {
         />
       </View>
 
-
       <FlatList
-        data={filteredProducts}
+        data={pcComponents}
         renderItem={renderProductItem}
         keyExtractor={(item) => item.id}
         numColumns={viewType === 'grid' ? 2 : 1}
@@ -365,15 +370,16 @@ const CategoryScreen = ({ route, navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#fff', // Màu nền chính: trắng
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    height: 60,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 15,
-    paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#333333',
+    borderBottomColor: "#eee",
   },
   backButton: {
     width: 40,
@@ -388,11 +394,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#AAAAAA',
+    // Chữ trong header: trắng để tương phản với gradient xanh
   },
   headerActions: {
     flexDirection: 'row',
@@ -401,7 +403,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#333333',
+    backgroundColor: '#E0E0E0', // Nút toggle: xám nhạt
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -413,11 +415,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     alignItems: 'center',
+    backgroundColor: '#FFFFFF', // Nền của thanh tìm kiếm: trắng
   },
   searchInputContainer: {
     flex: 1,
     height: 40,
-    backgroundColor: '#333333',
+    backgroundColor: '#F0F0F0', // Ô tìm kiếm: xám nhạt
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
@@ -429,14 +432,14 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 40,
-    color: '#FFFFFF',
+    color: '#000000', // Chữ trong ô tìm kiếm: đen
     fontSize: 16,
   },
   filterButton: {
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: '#333333',
+    backgroundColor: '#F0F0F0', // Nút filter: xám nhạt
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
@@ -445,13 +448,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: '#333333',
+    backgroundColor: '#F0F0F0', // Nút sort: xám nhạt
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
   },
   filterOptionsContainer: {
     marginVertical: 10,
+    backgroundColor: '#FFFFFF', // Nền của filter options: trắng
   },
   filterOptionsList: {
     paddingHorizontal: 15,
@@ -460,41 +464,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#333333',
+    backgroundColor: '#F0F0F0', // Nút filter: xám nhạt
     marginRight: 10,
   },
   activeFilterButton: {
-    backgroundColor: '#FF7675',
+    backgroundColor: '#74B9FF', // Nút filter active: xanh nhạt (phù hợp với header)
   },
   filterOptionText: {
-    color: '#FFFFFF',
+    color: '#000000', // Chữ của filter: đen
     fontSize: 14,
   },
   activeFilterText: {
+    color: '#FFFFFF', // Chữ của filter active: trắng
     fontWeight: 'bold',
   },
   productsList: {
     padding: 10,
+    backgroundColor: '#FFFFFF', // Nền của danh sách sản phẩm: trắng
   },
   gridItem: {
     flex: 1,
     margin: 5,
-    backgroundColor: '#2A2A2A',
     borderRadius: 12,
     overflow: 'hidden',
     maxWidth: '47.5%',
+    borderWidth: 1,
+    borderColor: "#eee"
   },
   listItem: {
     flex: 1,
     margin: 5,
-    backgroundColor: '#2A2A2A',
     borderRadius: 12,
     overflow: 'hidden',
     flexDirection: 'row',
   },
   gridImageContainer: {
     height: 120,
-    backgroundColor: '#333333',
+    backgroundColor: '#E0E0E0', // Nền placeholder của hình ảnh: xám nhạt
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -502,7 +508,7 @@ const styles = StyleSheet.create({
   listImageContainer: {
     width: 120,
     height: 120,
-    backgroundColor: '#333333',
+    backgroundColor: '#E0E0E0', // Nền placeholder của hình ảnh: xám nhạt
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -520,19 +526,19 @@ const styles = StyleSheet.create({
   productImagePlaceholderText: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#FFFFFF', // Chữ trong placeholder: trắng
   },
   outOfStockBadge: {
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Nền badge "Out of Stock": đen mờ
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderBottomLeftRadius: 8,
   },
   outOfStockText: {
-    color: '#FFFFFF',
+    color: '#FFFFFF', // Chữ "Out of Stock": trắng
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -545,39 +551,56 @@ const styles = StyleSheet.create({
   },
   productBrand: {
     fontSize: 12,
-    color: '#AAAAAA',
+    color: '#666666', // Chữ thương hiệu: xám đậm
     marginBottom: 2,
   },
   productName: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#000000', // Tên sản phẩm: đen
     marginBottom: 4,
   },
   productSpecs: {
     fontSize: 12,
-    color: '#AAAAAA',
+    color: '#666666', // Thông số: xám đậm
     marginBottom: 6,
   },
   productRating: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
+    height: 20,
   },
   ratingText: {
     fontSize: 12,
-    color: '#FFD700',
+    color: '#FFD700', // Điểm đánh giá: vàng
+    fontWeight: 'bold',
+  },
+  priceAndAddContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // Giá và nút Add chia đều không gian
+  },
+  addButton: {
+    backgroundColor: '#28A745', // Màu xanh lá cây
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  addButtonText: {
+    color: '#FFFFFF', // Chữ trắng
+    fontSize: 14,
     fontWeight: 'bold',
   },
   reviewCount: {
     fontSize: 12,
-    color: '#AAAAAA',
+    color: '#666666', // Số lượng đánh giá: xám đậm
     marginLeft: 4,
   },
   productPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FF7675',
+    color: '#FF7675', // Giá: đỏ hồng (giữ nguyên)
   },
   emptyListContainer: {
     padding: 20,
@@ -587,12 +610,12 @@ const styles = StyleSheet.create({
   emptyListText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#000000', // Chữ "No products found": đen
     marginBottom: 8,
   },
   emptyListSubtext: {
     fontSize: 14,
-    color: '#AAAAAA',
+    color: '#666666', // Chữ phụ: xám đậm
     textAlign: 'center',
   },
 });
