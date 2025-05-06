@@ -252,7 +252,7 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
             apiUrl = 'http://192.168.1.5:5000/api/keyboard/paginated';
             break;
         case 'Mouse':
-            apiUrl = 'http://localhost:5000/api/mouse/paginated';
+            apiUrl = 'http://192.168.1.5:5000/api/mouse/paginated';
             break;
         default:
             return;
@@ -311,7 +311,7 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
 
             <View style={viewType === 'grid' ? styles.gridProductInfo : styles.listProductInfo}>
                 <Text style={styles.productBrand}>{item.brand}</Text>
-                <Text style={styles.productName} numberOfLines={2}>
+                <Text style={styles.productName} numberOfLines={1}>
                     {item.name}
                 </Text>
                 <Text style={styles.productSpecs} numberOfLines={1}>
@@ -325,7 +325,7 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
                 </View>
 
                 <View style={styles.priceAndAddContainer} pointerEvents="box-none">
-                    <Text style={styles.productPrice}>{item.price}</Text>
+                    <Text style={styles.productPrice}>{item.price}$</Text>
                     {hasComponent(item) ? <TouchableOpacity
                         style={styles.hasButton}
                         disabled={true}
@@ -403,12 +403,13 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
                 />
             </View>
 
+
             <FlatList
                 data={items}
                 renderItem={renderProductItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => `${item.id}-${index}`} // Use combination of id and index
                 numColumns={viewType === 'grid' ? 2 : 1}
-                key={viewType} // Force re-render when view type changes
+                key={viewType}
                 contentContainerStyle={styles.productsList}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={

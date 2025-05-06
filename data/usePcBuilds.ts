@@ -22,6 +22,7 @@ interface PcBuildStore {
     getAllBuilds: () => PcBuild[]
     hasComponent: (component: TPcComponent) => boolean
     getComponentByType: (type: TPcComponent['type']) => TPcComponent | undefined
+    setBuilds: (builds: PcBuild[]) => void
 }
 
 export const usePcBuildStore = create<PcBuildStore>((set, get) => ({
@@ -100,4 +101,6 @@ export const usePcBuildStore = create<PcBuildStore>((set, get) => ({
         const currentBuild = state.builds.find((b) => b.id === state.currentBuildId)
         return currentBuild?.components.find((comp) => comp.type === type)
     },
+
+    setBuilds: (builds) => set(() => ({ builds })),
 }))

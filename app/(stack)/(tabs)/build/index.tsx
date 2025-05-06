@@ -14,6 +14,8 @@ import { usePcComponentStore } from '~/data/usePcComponentStore';
 import { PcBuild } from "~/data/usePcBuilds"
 import { usePcBuildStore } from "~/data/usePcBuilds"
 import { nanoid } from 'nanoid/non-secure'
+import { userId } from "~/data/userId"
+import axios from "axios"
 
 
 type PCBuilderScreenProps = {
@@ -46,6 +48,21 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   const crtBuild = usePcBuildStore((state) => state.getCurrentBuild)
   const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild)
   const currentBuild = crtBuild()
+  const typeToFieldMap: Record<ComponentType, string> = {
+    CPU: 'cpuId',
+    GPU: 'gpuId',
+    Motherboard: 'motherboardId',
+    RAM: 'memoryId',
+    Storage: 'driveId',
+    Keyboard: 'keyboardId',
+    Mouse: 'mouseId',
+  };
+
+  useEffect(() => {
+    if (currentBuild) {
+      setComponents(currentBuild.components)
+    }
+  }, [currentBuild])
 
   useEffect(() => {
     let total = 0
@@ -92,16 +109,7 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
     }
 
     // GPU and Power Supply compatibility
-    const gpu = selectedComponents.GPU
-    const psu = selectedComponents.PowerSupply
-    if (gpu && psu) {
-      const gpuPower = Number.parseInt(gpu.specs.powerRequirement)
-      const psuPower = Number.parseInt(psu.specs.wattage)
-      if (gpuPower > psuPower * 0.6) {
-        // Rule of thumb: GPU shouldn't use more than 60% of PSU power
-        issues.push(`GPU power requirement (${gpuPower}W) may be too high for the selected power supply (${psuPower}W)`)
-      }
-    }
+
 
     setCompatibilityIssues(issues)
   }
@@ -114,9 +122,6 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   }
 
   const renderComponentItem = (type: ComponentType, title: string) => {
-    if (currentBuild) {
-      setComponents(currentBuild.components)
-    }
     let component = getComponentByType(type)
     return (
       <TouchableOpacity style={styles.componentCard} onPress={() => navigateToComponentSelection(type)}>
@@ -147,8 +152,56 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
     )
   }
 
+  async function createBuild(name: string, userId: string, totalPrice: number, components: TPcComponent[]) {
+    const buildData: Record<string, string | number> = {
+      name,
+      userId,
+      totalPrice,
+    };
+
+    components.forEach((component) => {
+      const field = typeToFieldMap[component.type];
+      if (field) {
+        buildData[field] = component.id;
+      }
+    });
+
+    try {
+      const response = await axios.post('http://192.168.1.5:5000/api/build', buildData);
+      console.log('Build created:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating build:', error);
+      throw error;
+    }
+  }
+
+  async function updateBuild(name: string, userId: string, totalPrice: number, components: TPcComponent[], id: string) {
+    const buildData: Record<string, string | number> = {
+      name,
+      userId,
+      totalPrice,
+    };
+
+    components.forEach((component) => {
+      const field = typeToFieldMap[component.type];
+      if (field) {
+        buildData[field] = component.id;
+      }
+    });
+
+    try {
+      const response = await axios.put(`http://192.168.1.5:5000/api/build/${id}`, buildData);
+      console.log('Build update:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating build:', error);
+      throw error;
+    }
+  }
+
   const handleCompleteBuild = () => {
-    const requiredComponents: ComponentType[] = ["CPU", "Motherboard", "RAM", "Storage", "PowerSupply"]
+    const requiredComponents: ComponentType[] = ["CPU", "Motherboard", "RAM", "Storage"]
     const missingComponents = requiredComponents.filter((type) => !allComponents.some((comp) => comp.type === type))
 
     if (missingComponents.length > 0) {
@@ -203,31 +256,23 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
       "Build Saved!",
       `Your PC build "${buildName}" has been saved!`,
       [{
-        text: "OK", onPress: () => {
+        text: "OK", onPress: async () => {
           // Đóng modal ngay sau khi nhấn "OK"
           setIsModalVisible(false);
 
-          // Tạo hoặc cập nhật build
-          const id = nanoid();
-          const build: PcBuild = {
-            id: currentBuild ? currentBuild.id : id,
-            name: currentBuild ? currentBuild.name : buildName,
-            components: allComponents
-          };
-
-          // Log và thêm build
-          addBuild(build);
-
-          // Dọn dẹp các thông tin
+          if (currentBuild) {
+            await updateBuild(buildName, userId, totalcost(), allComponents, currentBuild.id);
+          } else {
+            await createBuild(buildName, userId, totalcost(), allComponents);
+          }
           clearComponents();
           setCurrentBuild("");
           setBuildName("");
-
-          // Chuyển hướng
           router.back()
         }
       }]
     )
+
   }
 
   const handleBack = () => {
