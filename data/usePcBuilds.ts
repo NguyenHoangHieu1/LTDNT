@@ -24,16 +24,17 @@ interface PcBuildStore {
     getComponentByType: (type: TPcComponent['type']) => TPcComponent | undefined
 }
 
-
 export const usePcBuildStore = create<PcBuildStore>((set, get) => ({
     builds: [],
     currentBuildId: null,
 
     addBuild: (build) =>
-        set((state) => ({
-            builds: [...state.builds, build],
-            currentBuildId: build.id, // optionally select it
-        })),
+        set((state) => {
+            const updatedBuilds = state.builds.some(b => b.id === build.id)
+                ? state.builds.map(b => (b.id === build.id ? build : b)) // thay thế nếu trùng id
+                : [...state.builds, build] // thêm mới nếu không trùng
+            return { builds: updatedBuilds }
+        }),
 
     removeBuild: (id) =>
         set((state) => ({

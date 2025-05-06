@@ -6,6 +6,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaVi
 import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { useRouter } from "expo-router"
+import { usePcBuildStore } from "~/data/usePcBuilds"
 
 // Mock user data
 const mockUser = {
@@ -51,6 +52,8 @@ const ProfileScreen: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false)
   const [notifications, setNotifications] = useState(true)
   const [priceAlerts, setPriceAlerts] = useState(true)
+  const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild)
+  const builds = usePcBuildStore((state) => state.builds)
 
   const handleEditProfile = () => {
     Alert.alert("Edit Profile", "This feature will be available soon!")
@@ -99,8 +102,8 @@ const ProfileScreen: React.FC = () => {
   }
 
   const handleViewBuild = (buildId: string) => {
-    // Navigate to the build details
-    Alert.alert("View Build", `Viewing build ${buildId}. This feature will be available soon!`)
+    setCurrentBuild(buildId)
+    router.push("/(stack)/(tabs)/build")
   }
 
   return (
@@ -130,16 +133,16 @@ const ProfileScreen: React.FC = () => {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Saved Builds</Text>
-          {savedBuilds.length > 0 ? (
-            savedBuilds.map((build) => (
+          {builds.length > 0 ? (
+            builds.map((build) => (
               <View key={build.id} style={styles.buildCard}>
-                <Image source={{ uri: build.thumbnail }} style={styles.buildThumbnail} />
+                <Image source={{ uri: "https://placeholder.svg?height=100&width=100" }} style={styles.buildThumbnail} />
                 <View style={styles.buildInfo}>
                   <Text style={styles.buildName}>{build.name}</Text>
-                  <Text style={styles.buildDate}>Created on {build.date}</Text>
+                  <Text style={styles.buildDate}>Created on 2023-08-15</Text>
                   <View style={styles.buildDetails}>
-                    <Text style={styles.buildPrice}>${build.totalPrice.toFixed(2)}</Text>
-                    <Text style={styles.buildComponents}>{build.components} components</Text>
+                    <Text style={styles.buildPrice}>${build.components.reduce((sum, component) => sum + component.price, 0).toFixed(2)}</Text>
+                    <Text style={styles.buildComponents}>{build.components.length} components</Text>
                   </View>
                 </View>
                 <View style={styles.buildActions}>

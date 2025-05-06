@@ -21,6 +21,8 @@ import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { Menu, Search, Home, Settings, User, HelpCircle, Info } from "react-native-feather"
 import { Logo, Tool, Product } from '~/assets/icon';
+import { usePcBuildStore } from '~/data/usePcBuilds';
+import { usePcComponentStore } from '~/data/usePcComponentStore';
 
 // Sample data for categories
 const { width } = Dimensions.get("window")
@@ -31,6 +33,8 @@ const MainScreen = ({ navigation }: any) => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current
   const navigationStore = useNavigationStore.getState()
+  const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild)
+  const clearComponents = usePcComponentStore((state) => state.clearComponents)
   const router = useRouter();
 
   const menuItems = [
@@ -44,6 +48,12 @@ const MainScreen = ({ navigation }: any) => {
   const navigateToScreen = (screenName: any) => {
     toggleDrawer()
     router.push(screenName)
+  }
+
+  const startYourBuild = () => {
+    setCurrentBuild("")
+    clearComponents()
+    router.push("/build")
   }
 
   const toggleDrawer = () => {
@@ -96,7 +106,7 @@ const MainScreen = ({ navigation }: any) => {
           <Text style={styles.subTitle}>
             We provide part selection, pricing, and compatibility guidance for do-it-yourself computer builders.
           </Text>
-          <TouchableOpacity style={styles.startButton} onPress={() => router.push("/build")}>
+          <TouchableOpacity style={styles.startButton} onPress={startYourBuild}>
             <Text style={styles.startButtonText}>🔧 Start Your Build</Text>
           </TouchableOpacity>
         </View>

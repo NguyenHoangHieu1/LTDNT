@@ -39,10 +39,12 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   const getAllComponents = usePcComponentStore((state) => state.getAllComponents)
   const allComponents = getAllComponents()
   const clearComponents = usePcComponentStore((state) => state.clearComponents)
+  const setComponents = usePcComponentStore((state) => state.setComponents)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [buildName, setBuildName] = useState("")
   const addBuild = usePcBuildStore((state) => state.addBuild)
   const crtBuild = usePcBuildStore((state) => state.getCurrentBuild)
+  const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild)
   const currentBuild = crtBuild()
 
   useEffect(() => {
@@ -112,12 +114,10 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   }
 
   const renderComponentItem = (type: ComponentType, title: string) => {
-    let component = null
     if (currentBuild) {
-      component = currentBuild.components.find(comp => comp.type === type)
-    } else {
-      component = getComponentByType(type)
+      setComponents(currentBuild.components)
     }
+    let component = getComponentByType(type)
     return (
       <TouchableOpacity style={styles.componentCard} onPress={() => navigateToComponentSelection(type)}>
         <View style={styles.componentHeader}>
@@ -164,6 +164,9 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
         { text: "Proceed", onPress: () => completeBuild() },
       ])
     } else {
+      if (currentBuild) {
+        setBuildName(currentBuild.name)
+      }
       setIsModalVisible(true)
     }
   }
@@ -175,23 +178,53 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
     }
 
     // Lưu build với tên buildName
+    // Alert.alert(
+    //   "Build Saved!",
+    //   `Your PC build "${buildName}" has been saved!`,
+    //   [{
+    //     text: "OK", onPress: () => {
+    //       setIsModalVisible(false)
+    //       const id = nanoid()
+    //       const build: PcBuild = {
+    //         id: currentBuild ? currentBuild.id : id,
+    //         name: currentBuild ? currentBuild.name : buildName,
+    //         components: allComponents
+    //       }
+    //       console.log(build)
+    //       addBuild(build)
+    //       clearComponents()
+    //       setCurrentBuild("")
+    //       setBuildName("")
+    //       router.navigate("/")
+    //     }
+    //   }]
+    // )
     Alert.alert(
       "Build Saved!",
       `Your PC build "${buildName}" has been saved!`,
       [{
         text: "OK", onPress: () => {
-          setIsModalVisible(false)
-          const id = nanoid()
+          // Đóng modal ngay sau khi nhấn "OK"
+          setIsModalVisible(false);
+
+          // Tạo hoặc cập nhật build
+          const id = nanoid();
           const build: PcBuild = {
-            id: id,
-            name: buildName,
+            id: currentBuild ? currentBuild.id : id,
+            name: currentBuild ? currentBuild.name : buildName,
             components: allComponents
-          }
-          console.log(build)
-          addBuild(build)
-          clearComponents()
-          setBuildName("")
-          router.navigate("/")
+          };
+
+          // Log và thêm build
+          addBuild(build);
+
+          // Dọn dẹp các thông tin
+          clearComponents();
+          setCurrentBuild("");
+          setBuildName("");
+
+          // Chuyển hướng
+          router.back()
         }
       }]
     )
@@ -230,9 +263,8 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
           {renderComponentItem("RAM", "RAM")}
           {renderComponentItem("GPU", "Graphics Card")}
           {renderComponentItem("Storage", "Storage")}
-          {renderComponentItem("PowerSupply", "Power Supply")}
-          {renderComponentItem("Case", "Case")}
-          {renderComponentItem("Cooling", "Cooling")}
+          {renderComponentItem("Keyboard", "Keyboard")}
+          {renderComponentItem("Mouse", "Mouse")}
         </View>
       </ScrollView>
 

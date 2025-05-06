@@ -1,4 +1,4 @@
-export type ComponentType = "CPU" | "Motherboard" | "RAM" | "GPU" | "Storage" | "PowerSupply" | "Case" | "Cooling"
+export type ComponentType = "CPU" | "Motherboard" | "RAM" | "GPU" | "Storage" | "PowerSupply" | "Case" | "Cooling" | "Keyboard" | "Mouse"
 
 export interface TPcComponent {
   id: string

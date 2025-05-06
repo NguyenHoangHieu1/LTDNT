@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
     View,
     Text,
@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useLocalSearchParams } from 'expo-router';
 import { TPcComponent, pcComponents } from "~/data/pcComponents"
 import { usePcComponentStore } from '~/data/usePcComponentStore';
+import axios from 'axios';
 
 // Sample data for GPUs
 const gpuData = [
@@ -225,6 +226,65 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
         return matchesSearch;
     });
 
+    const [items, setItems] = useState<TPcComponent[]>([]);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    let apiUrl;
+    switch (typeObj) {
+        case 'CPU':
+            apiUrl = 'http://192.168.1.5:5000/api/cpu/paginated';
+            break;
+        case 'Motherboard':
+            apiUrl = 'http://192.168.1.5:5000/api/motherboard/paginated';
+            break;
+        case 'RAM':
+            apiUrl = 'http://192.168.1.5:5000/api/memory/paginated';
+            break;
+        case 'GPU':
+            apiUrl = 'http://192.168.1.5:5000/api/gpu/paginated';
+            break;
+        case 'Storage':
+            apiUrl = 'http://192.168.1.5:5000/api/drive/paginated';
+            break;
+        case 'Keyboard':
+            apiUrl = 'http://192.168.1.5:5000/api/keyboard/paginated';
+            break;
+        case 'Mouse':
+            apiUrl = 'http://localhost:5000/api/mouse/paginated';
+            break;
+        default:
+            return;
+    }
+
+    const fetchBuilds = useCallback(async () => {
+        if (loading || (totalPages && page > totalPages)) return;
+
+        setLoading(true);
+        console.log(apiUrl)
+        try {
+            const res = await axios.get(apiUrl, {
+                params: { page },
+                headers: {
+                    Authorization: `Bearer yourToken`, // nếu API có bảo vệ
+                },
+            });
+
+            setItems((prev) => [...prev, ...res.data.items]);
+            setTotalPages(res.data.totalPages);
+            setPage((prev) => prev + 1);
+        } catch (error) {
+            console.error('Lỗi khi lấy dữ liệu:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [page, totalPages, loading]);
+
+    useEffect(() => {
+        fetchBuilds();
+    }, []);
+
     const addComponentAndMove = (item: any) => {
         addComponent(item)
         router.back()
@@ -239,7 +299,7 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
                     <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
                 ) : (
                     <View style={[styles.productImagePlaceholder, { backgroundColor: HEADER_COLORS[0] }]}>
-                        <Text style={styles.productImagePlaceholderText}>{item.brand.charAt(0)}</Text>
+                        {/* <Text style={styles.productImagePlaceholderText}>{item.brand.charAt(0)}</Text> */}
                     </View>
                 )}
                 {!item.inStock && (
@@ -344,7 +404,7 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
             </View>
 
             <FlatList
-                data={pcComponents.filter(item => item.type === typeObj)}
+                data={items}
                 renderItem={renderProductItem}
                 keyExtractor={(item) => item.id}
                 numColumns={viewType === 'grid' ? 2 : 1}
@@ -357,6 +417,8 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
                         <Text style={styles.emptyListSubtext}>Try adjusting your search or filters</Text>
                     </View>
                 }
+                onEndReached={fetchBuilds}
+                onEndReachedThreshold={0.5}
             />
         </SafeAreaView>
     );
