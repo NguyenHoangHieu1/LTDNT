@@ -10,6 +10,7 @@ const HomeLayout = () => {
         name="list_product"
         options={{ headerTitle: 'List Product', headerShown: false }}
       />
+      <Stack.Screen name="product_detail" options={{ headerTitle: 'detail', headerShown: false }} />
     </Stack>
   );
 };

@@ -1,11 +1,16 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaView, Switch, Alert } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
-import { useRouter } from "expo-router"
+import { useFocusEffect, useRouter } from "expo-router"
+import { usePcBuildStore } from "~/data/usePcBuilds"
+import moment from 'moment-timezone';
+import axios from "axios"
+import { TPcComponent } from "~/data/pcComponents"
+import { PcBuild } from "~/data/usePcBuilds"
 
 // Mock user data
 const mockUser = {
@@ -51,6 +56,9 @@ const ProfileScreen: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false)
   const [notifications, setNotifications] = useState(true)
   const [priceAlerts, setPriceAlerts] = useState(true)
+  const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild)
+  const builds = usePcBuildStore((state) => state.builds)
+  const setBuilds = usePcBuildStore((state) => state.setBuilds)
 
   const handleEditProfile = () => {
     Alert.alert("Edit Profile", "This feature will be available soon!")
@@ -77,30 +85,79 @@ const ProfileScreen: React.FC = () => {
     )
   }
 
-  const handleDeleteBuild = (buildId: string) => {
-    Alert.alert(
-      "Delete Build",
-      "Are you sure you want to delete this build?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          onPress: () => {
-            setSavedBuilds(savedBuilds.filter((build) => build.id !== buildId))
-          },
-          style: "destructive",
-        },
-      ],
-      { cancelable: true },
-    )
+  async function fetchComponentById(type: string, id: string): Promise<TPcComponent | null> {
+    try {
+      const res = await axios.get(`http://192.168.1.5:5000/api/${type.toLowerCase()}/${id}`);
+      return res.data;
+    } catch (error) {
+      console.error(`Failed to fetch ${type} with id ${id}`, error);
+      return null;
+    }
   }
 
+  async function transformToPcBuilds(builds: any[]): Promise<PcBuild[]> {
+    const pcBuilds: PcBuild[] = await Promise.all(
+      builds.map(async (build) => {
+        const componentTypes = [
+          { key: "cpuId", type: "CPU" },
+          { key: "gpuId", type: "GPU" },
+          { key: "memoryId", type: "Memory" },
+          { key: "motherboardId", type: "Motherboard" },
+          { key: "driveId", type: "Drive" },
+          { key: "keyboardId", type: "Keyboard" },
+          { key: "mouseId", type: "Mouse" },
+        ];
+
+        const components = await Promise.all(
+          componentTypes
+            .filter(({ key }) => build[key]) // kiểm tra có id không
+            .map(({ key, type }) => fetchComponentById(type, build[key]))
+        );
+
+        return {
+          id: build._id,
+          name: build.name,
+          components: components.filter((c): c is TPcComponent => c !== null),
+        };
+      })
+    );
+    return pcBuilds;
+  }
+
+  const fetchBuilds = async () => {
+    try {
+      const res = await fetch("http://192.168.1.5:5000/api/build");
+      const builds = await res.json();
+      const pcBuilds = await transformToPcBuilds(builds);
+      setBuilds(pcBuilds);
+    } catch (err) {
+      console.error("Lỗi khi fetch builds:", err);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchBuilds();
+    }, [])
+  )
+
+  const handleDeleteBuild = async (buildId: string) => {
+    try {
+      console.log(buildId)
+      const res = await axios.delete(`http://192.168.1.5:5000/api/build/${buildId}`);
+      console.log(res.data.message);
+      fetchBuilds();
+    } catch (error) {
+      console.error("Lỗi khi xóa build:", error);
+    }
+  }
+
+
+
   const handleViewBuild = (buildId: string) => {
-    // Navigate to the build details
-    Alert.alert("View Build", `Viewing build ${buildId}. This feature will be available soon!`)
+    console.log(buildId)
+    setCurrentBuild(buildId)
+    router.push("/(stack)/(tabs)/build")
   }
 
   return (
@@ -130,16 +187,16 @@ const ProfileScreen: React.FC = () => {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Saved Builds</Text>
-          {savedBuilds.length > 0 ? (
-            savedBuilds.map((build) => (
+          {builds.length > 0 ? (
+            builds.map((build) => (
               <View key={build.id} style={styles.buildCard}>
-                <Image source={{ uri: build.thumbnail }} style={styles.buildThumbnail} />
+                <Image source={{ uri: "https://placeholder.svg?height=100&width=100" }} style={styles.buildThumbnail} />
                 <View style={styles.buildInfo}>
                   <Text style={styles.buildName}>{build.name}</Text>
-                  <Text style={styles.buildDate}>Created on {build.date}</Text>
+                  <Text style={styles.buildDate}>Created on 2023-08-15</Text>
                   <View style={styles.buildDetails}>
-                    <Text style={styles.buildPrice}>${build.totalPrice.toFixed(2)}</Text>
-                    <Text style={styles.buildComponents}>{build.components} components</Text>
+                    <Text style={styles.buildPrice}>${build.components.reduce((sum, component) => sum + component.price, 0).toFixed(2)}</Text>
+                    <Text style={styles.buildComponents}>{build.components.length} components</Text>
                   </View>
                 </View>
                 <View style={styles.buildActions}>

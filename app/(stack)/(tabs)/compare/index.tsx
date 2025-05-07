@@ -8,5 +8,4 @@ const CompareScreen = () => {
     </View>
   )
 }
-
 export default CompareScreen
