@@ -20,7 +20,7 @@ import { pcComponents } from '~/data/pcComponents';
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { Menu, Search, Home, Settings, User, HelpCircle, Info } from "react-native-feather"
-import { Logo, Tool, Product } from '~/assets/icon';
+import { Logo, Tool, Product, AI } from '~/assets/icon';
 import { usePcBuildStore } from '~/data/usePcBuilds';
 import { usePcComponentStore } from '~/data/usePcComponentStore';
 
@@ -43,6 +43,7 @@ const MainScreen = ({ navigation }: any) => {
     { name: "Compare", icon: Settings, screen: "Settings" },
     { name: "Profile", icon: User, screen: "/profile" },
     { name: "About", icon: Info, screen: "About" },
+    { name: "AI Generate", icon: AI, screen: "/AI" }
   ]
 
   const navigateToScreen = (screenName: any) => {
