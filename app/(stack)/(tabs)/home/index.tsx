@@ -17,34 +17,35 @@ import { router, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigationStore } from '~/libs/stateChangePage';
 import { pcComponents } from '~/data/pcComponents';
-import { NavigationContainer } from "@react-navigation/native"
-import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { Menu, Search, Home, Settings, User, HelpCircle, Info } from "react-native-feather"
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Menu, Search, Home, Settings, User, HelpCircle, Info, Lock } from 'react-native-feather';
 import { Logo, Tool, Product } from '~/assets/icon';
 
 // Sample data for categories
-const { width } = Dimensions.get("window")
-const DRAWER_WIDTH = width * 0.75
+const { width } = Dimensions.get('window');
+const DRAWER_WIDTH = width * 0.75;
 
 const MainScreen = ({ navigation }: any) => {
   const [overlayOpacity, setOverlayOpacity] = useState(0.1); // ban đầu mờ 50%
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current
-  const navigationStore = useNavigationStore.getState()
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+  const navigationStore = useNavigationStore.getState();
   const router = useRouter();
 
   const menuItems = [
-    { name: "Build", icon: Tool, screen: "/build" },
-    { name: "Products", icon: Product, screen: '/(stack)/(tabs)/home/list_product' },
-    { name: "Compare", icon: Settings, screen: "Settings" },
-    { name: "Profile", icon: User, screen: "/profile" },
-    { name: "About", icon: Info, screen: "About" },
-  ]
+    { name: 'Build', icon: Tool, screen: '/build' },
+    { name: 'Products', icon: Product, screen: '/(stack)/(tabs)/home/list_product' },
+    { name: 'Compare', icon: Settings, screen: 'Settings' },
+    { name: 'Profile', icon: User, screen: '/profile' },
+    { name: 'About', icon: Info, screen: 'About' },
+    { name: 'Admin', icon: Lock, screen: '/admin' },
+  ];
 
   const navigateToScreen = (screenName: any) => {
-    toggleDrawer()
-    router.push(screenName)
-  }
+    toggleDrawer();
+    router.push(screenName);
+  };
 
   const toggleDrawer = () => {
     if (drawerOpen) {
@@ -67,8 +68,7 @@ const MainScreen = ({ navigation }: any) => {
         useNativeDriver: true,
       }).start();
     }
-  }
-
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,9 +94,10 @@ const MainScreen = ({ navigation }: any) => {
         <View style={styles.centerContent}>
           <Text style={styles.mainTitle}>Pick Parts. Build Your PC. Compare and Share.</Text>
           <Text style={styles.subTitle}>
-            We provide part selection, pricing, and compatibility guidance for do-it-yourself computer builders.
+            We provide part selection, pricing, and compatibility guidance for do-it-yourself
+            computer builders.
           </Text>
-          <TouchableOpacity style={styles.startButton} onPress={() => router.push("/build")}>
+          <TouchableOpacity style={styles.startButton} onPress={() => router.push('/build')}>
             <Text style={styles.startButtonText}>🔧 Start Your Build</Text>
           </TouchableOpacity>
         </View>
@@ -117,7 +118,10 @@ const MainScreen = ({ navigation }: any) => {
 
         <View style={styles.drawerContent}>
           {menuItems.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.menuItem} onPress={() => navigateToScreen(item.screen)}>
+            <TouchableOpacity
+              key={index}
+              style={styles.menuItem}
+              onPress={() => navigateToScreen(item.screen)}>
               <item.icon stroke="#333" width={20} height={20} />
               <Text style={styles.menuItemText}>{item.name}</Text>
             </TouchableOpacity>
@@ -125,63 +129,63 @@ const MainScreen = ({ navigation }: any) => {
         </View>
       </Animated.View>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   header: {
     height: 60,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: '#eee',
   },
   iconContainer: {
     width: 40,
     height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logoContainer: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logoText: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   content: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   contentText: {
     fontSize: 16,
   },
   overlay: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     right: 0,
     bottom: 0,
     width: width,
-    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
     zIndex: 1,
   },
   drawer: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
     bottom: 0,
     width: DRAWER_WIDTH,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     zIndex: 2,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 2,
       height: 0,
@@ -192,21 +196,21 @@ const styles = StyleSheet.create({
   },
   drawerHeader: {
     height: 120,
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5',
   },
   drawerTitle: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   drawerContent: {
     flex: 1,
     paddingTop: 20,
   },
   menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 15,
     paddingHorizontal: 20,
   },
@@ -216,40 +220,37 @@ const styles = StyleSheet.create({
   },
   screenContainer: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   centerContent: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 20,
   },
   mainTitle: {
     fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
+    fontWeight: 'bold',
+    textAlign: 'center',
     marginBottom: 10,
   },
   subTitle: {
     fontSize: 14,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
     marginBottom: 20,
   },
   startButton: {
-    backgroundColor: "#3498db",
+    backgroundColor: '#3498db',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
   },
   startButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 16,
   },
-
-})
-
-
+});
 
 export default MainScreen;
