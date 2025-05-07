@@ -17,10 +17,14 @@ import { router, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigationStore } from '~/libs/stateChangePage';
 import { pcComponents } from '~/data/pcComponents';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Menu, Search, Home, Settings, User, HelpCircle, Info, Lock } from 'react-native-feather';
-import { Logo, Tool, Product } from '~/assets/icon';
+
+import { NavigationContainer } from "@react-navigation/native"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import { Menu, Search, Home, Settings, User, HelpCircle, Info } from "react-native-feather"
+import { Logo, Tool, Product, AI } from '~/assets/icon';
+import { usePcBuildStore } from '~/data/usePcBuilds';
+import { usePcComponentStore } from '~/data/usePcComponentStore';
+
 
 // Sample data for categories
 const { width } = Dimensions.get('window');
@@ -28,24 +32,33 @@ const DRAWER_WIDTH = width * 0.75;
 
 const MainScreen = ({ navigation }: any) => {
   const [overlayOpacity, setOverlayOpacity] = useState(0.1); // ban đầu mờ 50%
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
-  const navigationStore = useNavigationStore.getState();
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current
+  const navigationStore = useNavigationStore.getState()
+  const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild)
+  const clearComponents = usePcComponentStore((state) => state.clearComponents)
   const router = useRouter();
 
   const menuItems = [
-    { name: 'Build', icon: Tool, screen: '/build' },
-    { name: 'Products', icon: Product, screen: '/(stack)/(tabs)/home/list_product' },
-    { name: 'Compare', icon: Settings, screen: 'Settings' },
-    { name: 'Profile', icon: User, screen: '/profile' },
-    { name: 'About', icon: Info, screen: 'About' },
+    { name: "Build", icon: Tool, screen: "/build" },
+    { name: "Products", icon: Product, screen: '/(stack)/(tabs)/home/list_product' },
+    { name: "Compare", icon: Settings, screen: "Settings" },
+    { name: "Profile", icon: User, screen: "/profile" },
+    { name: "About", icon: Info, screen: "About" },
+    { name: "AI Generate", icon: AI, screen: "/AI" },
     { name: 'Admin', icon: Lock, screen: '/admin' },
-  ];
+  ]
 
   const navigateToScreen = (screenName: any) => {
     toggleDrawer();
     router.push(screenName);
   };
+
+  const startYourBuild = () => {
+    setCurrentBuild("")
+    clearComponents()
+    router.push("/build")
+  }
 
   const toggleDrawer = () => {
     if (drawerOpen) {
@@ -97,7 +110,9 @@ const MainScreen = ({ navigation }: any) => {
             We provide part selection, pricing, and compatibility guidance for do-it-yourself
             computer builders.
           </Text>
-          <TouchableOpacity style={styles.startButton} onPress={() => router.push('/build')}>
+
+          <TouchableOpacity style={styles.startButton} onPress={startYourBuild}>
+
             <Text style={styles.startButtonText}>🔧 Start Your Build</Text>
           </TouchableOpacity>
         </View>

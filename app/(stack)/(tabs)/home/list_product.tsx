@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,194 +15,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Filter, Search } from 'react-native-feather';
 import { COLORS } from '~/theme/colors';
 import { Ionicons } from "@expo/vector-icons"
-import { pcComponents } from '~/data/pcComponents';
-
-// Sample data for GPUs
-const gpuData = [
-  {
-    id: "cpu-1",
-    type: "CPU",
-    name: "Intel Core i9-13900K",
-    description:
-      "High-end desktop processor with 24 cores (8P+16E) and 32 threads, perfect for gaming and content creation.",
-    price: 599.99,
-    rating: 5,
-    image: "https://placeholder.svg?height=300&width=300",
-    specs: {
-      cores: "24 (8P+16E)",
-      threads: "32",
-      baseFrequency: "3.0 GHz",
-      boostFrequency: "5.8 GHz",
-      socket: "LGA 1700",
-      tdp: "125W",
-    },
-    compatibility: ["Intel 600 series motherboards", "Intel 700 series motherboards", "DDR5 memory"],
-    inStock: true,
-  },
-  {
-    id: '2',
-    name: 'NVIDIA RTX 4060',
-    brand: 'MSI',
-    price: '$299',
-    specs: '8GB GDDR6X, 3072 CUDA Cores',
-    rating: 4.5,
-    reviews: 87,
-    image: null,
-    inStock: true,
-  },
-  {
-    id: '3',
-    name: 'NVIDIA RTX 3060 Ti',
-    brand: 'ASUS',
-    price: '$399',
-    specs: '8GB GDDR6, 4864 CUDA Cores',
-    rating: 4.7,
-    reviews: 256,
-    image: null,
-    inStock: true,
-  },
-  {
-    id: '4',
-    name: 'AMD Radeon RX 6600',
-    brand: 'Sapphire',
-    price: '$279',
-    specs: '8GB GDDR6, 1792 Stream Processors',
-    rating: 4.2,
-    reviews: 112,
-    image: null,
-    inStock: true,
-  },
-  {
-    id: '5',
-    name: 'NVIDIA RTX 4070',
-    brand: 'EVGA',
-    price: '$599',
-    specs: '12GB GDDR6X, 5888 CUDA Cores',
-    rating: 4.8,
-    reviews: 94,
-    image: null,
-    inStock: false,
-  },
-  {
-    id: '6',
-    name: 'AMD Radeon RX 7600',
-    brand: 'XFX',
-    price: '$269',
-    specs: '8GB GDDR6, 2048 Stream Processors',
-    rating: 4.1,
-    reviews: 76,
-    image: null,
-    inStock: true,
-  },
-  {
-    id: '7',
-    name: 'NVIDIA RTX 4060 Ti',
-    brand: 'Zotac',
-    price: '$449',
-    specs: '16GB GDDR6, 4352 CUDA Cores',
-    rating: 4.6,
-    reviews: 63,
-    image: null,
-    inStock: true,
-  },
-  {
-    id: '8',
-    name: 'AMD Radeon RX 6700 XT',
-    brand: 'PowerColor',
-    price: '$429',
-    specs: '12GB GDDR6, 2560 Stream Processors',
-    rating: 4.4,
-    reviews: 142,
-    image: null,
-    inStock: true,
-  },
-];
-
-// Sample data for CPUs
-const cpuData = [
-  {
-    id: '1',
-    name: 'AMD Ryzen 5 5600X',
-    brand: 'AMD',
-    price: '$199',
-    specs: '6 Cores, 12 Threads, 3.7GHz Base',
-    rating: 4.7,
-    reviews: 312,
-    image: null,
-    inStock: true,
-  },
-  {
-    id: '2',
-    name: 'Intel Core i5-12600K',
-    brand: 'Intel',
-    price: '$249',
-    specs: '10 Cores, 16 Threads, 3.7GHz Base',
-    rating: 4.6,
-    reviews: 187,
-    image: null,
-    inStock: true,
-  },
-  {
-    id: '3',
-    name: 'AMD Ryzen 7 5800X3D',
-    brand: 'AMD',
-    price: '$329',
-    specs: '8 Cores, 16 Threads, 3.4GHz Base',
-    rating: 4.9,
-    reviews: 156,
-    image: null,
-    inStock: false,
-  },
-  {
-    id: '4',
-    name: 'Intel Core i7-13700K',
-    brand: 'Intel',
-    price: '$409',
-    specs: '16 Cores, 24 Threads, 3.4GHz Base',
-    rating: 4.8,
-    reviews: 134,
-    image: null,
-    inStock: true,
-  },
-  {
-    id: '5',
-    name: 'AMD Ryzen 9 7900X',
-    brand: 'AMD',
-    price: '$449',
-    specs: '12 Cores, 24 Threads, 4.7GHz Base',
-    rating: 4.7,
-    reviews: 98,
-    image: null,
-    inStock: true,
-  },
-  {
-    id: '6',
-    name: 'Intel Core i9-13900K',
-    brand: 'Intel',
-    price: '$589',
-    specs: '24 Cores, 32 Threads, 3.0GHz Base',
-    rating: 4.8,
-    reviews: 112,
-    image: null,
-    inStock: true,
-  },
-];
-
-// Category data
-const categories = {
-  'Graphics Cards': {
-    title: 'Graphics Cards',
-    data: gpuData,
-    color: ['#FF7675', '#D63031'],
-    icon: '🎮',
-  },
-  Processors: {
-    title: 'Processors',
-    data: cpuData,
-    color: ['#74B9FF', '#0984E3'],
-    icon: '⚡',
-  },
-};
+import { pcComponents, TPcComponent } from '~/data/pcComponents';
+import { usePcComponentStore } from '~/data/usePcComponentStore';
+import { useNavigationStore } from '~/libs/stateChangePage';
+import axios from 'axios';
 
 // Định nghĩa màu của header
 const HEADER_COLORS = COLORS.MainBlue; // Gradient xanh dương nhạt đến đậm
@@ -212,51 +28,176 @@ const CategoryScreen = ({ route, navigation }: any) => {
   // For this example, we'll default to 'Graphics Cards'
   const categoryName = route?.params?.category || 'Graphics Cards';
   //@ts-ignore
-  const category = categories[categoryName];
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('CPU');
   const [viewType, setViewType] = useState('grid'); // 'grid' or 'list'
 
   // Filter options
-  const filterOptions = ['All', 'In Stock', 'NVIDIA', 'AMD'];
+  const filterOptions = ["CPU", "Motherboard", "RAM", "GPU", "Storage", "Keyboard", "Mouse"];
 
-  // Filter products based on search and active filter
-  const filteredProducts = category.data.filter((product: any) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.brand.toLowerCase().includes(searchQuery.toLowerCase());
+  const [items, setItems] = useState<TPcComponent[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-    if (activeFilter === 'All') return matchesSearch;
-    if (activeFilter === 'In Stock') return matchesSearch && product.inStock;
-    if (activeFilter === 'NVIDIA') return matchesSearch && product.name.includes('NVIDIA');
-    if (activeFilter === 'AMD') return matchesSearch && product.name.includes('AMD');
+  const addComponent = usePcComponentStore((state) => state.addComponent)
+  const hasComponent = usePcComponentStore((state) => state.hasComponent)
 
-    return matchesSearch;
-  });
+  const fetchBuilds = useCallback(
+    async (filter = activeFilter) => {
+      if (loading || (totalPages && page > totalPages)) return
+
+      console.log(filter)
+      let apiUrl
+      switch (filter) {
+        case "CPU":
+          apiUrl = "http://192.168.1.5:5000/api/cpu/paginated"
+          break
+        case "Motherboard":
+          apiUrl = "http://192.168.1.5:5000/api/motherboard/paginated"
+          break
+        case "RAM":
+          apiUrl = "http://192.168.1.5:5000/api/memory/paginated"
+          break
+        case "GPU":
+          apiUrl = "http://192.168.1.5:5000/api/gpu/paginated"
+          break
+        case "Storage":
+          apiUrl = "http://192.168.1.5:5000/api/drive/paginated"
+          break
+        case "Keyboard":
+          apiUrl = "http://192.168.1.5:5000/api/keyboard/paginated"
+          break
+        case "Mouse":
+          apiUrl = "http://192.168.1.5:5000/api/mouse/paginated"
+          break
+        default:
+          return
+      }
+
+      setLoading(true)
+      console.log(apiUrl)
+      try {
+        const res = await axios.get(apiUrl, {
+          params: { page },
+          headers: {
+            Authorization: `Bearer yourToken`, // nếu API có bảo vệ
+          },
+        })
+
+        setItems((prev) => [...prev, ...res.data.items])
+        setTotalPages(res.data.totalPages)
+        setPage((prev) => prev + 1)
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [page, totalPages, loading, activeFilter],
+  )
+
+  useEffect(() => {
+    setItems([])
+    setPage(1) // Reset page when filter changes
+    fetchBuilds(activeFilter)
+  }, [activeFilter])
+
+  const fetchBuildsByQuery = useCallback(
+    async (filter = activeFilter, query = '') => {
+      if (loading || (totalPages && page > totalPages)) return;
+
+      let apiUrl;
+      switch (filter) {
+        case "CPU":
+          apiUrl = "http://192.168.1.5:5000/api/cpu/paginated";
+          break;
+        case "Motherboard":
+          apiUrl = "http://192.168.1.5:5000/api/motherboard/paginated";
+          break;
+        case "RAM":
+          apiUrl = "http://192.168.1.5:5000/api/memory/paginated";
+          break;
+        case "GPU":
+          apiUrl = "http://192.168.1.5:5000/api/gpu/paginated";
+          break;
+        case "Storage":
+          apiUrl = "http://192.168.1.5:5000/api/drive/paginated";
+          break;
+        case "Keyboard":
+          apiUrl = "http://192.168.1.5:5000/api/keyboard/paginated";
+          break;
+        case "Mouse":
+          apiUrl = "http://192.168.1.5:5000/api/mouse/paginated";
+          break;
+        default:
+          return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await axios.get(apiUrl, {
+          params: {
+            page,
+            name: query.trim(), // thêm query tìm kiếm
+          },
+          headers: {
+            Authorization: `Bearer yourToken`,
+          },
+        });
+
+        setItems((prev) => [...prev, ...res.data.items]);
+        setTotalPages(res.data.totalPages);
+        setPage((prev) => prev + 1);
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [page, totalPages, loading, activeFilter]
+  );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setItems([]);
+      setPage(1); // reset về trang đầu
+      fetchBuildsByQuery(activeFilter, searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, activeFilter]);
+
+
+
+  const productDetail = (product: TPcComponent) => {
+    useNavigationStore.getState().setData("product", product);
+    router.push("/(stack)/(tabs)/home/product_detail")
+  }
+
+  const addComponentAndMove = (item: any) => {
+    addComponent(item)
+    router.replace("/(stack)/(tabs)/build")
+  }
 
   const renderProductItem = ({ item }: any) => (
     <TouchableOpacity
       style={viewType === 'grid' ? styles.gridItem : styles.listItem}
-      onPress={() => console.log(`Selected product: ${item.name}`)}>
+      onPress={() => productDetail(item)}>
       <View style={viewType === 'grid' ? styles.gridImageContainer : styles.listImageContainer}>
         {item.image ? (
           <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
         ) : (
           <View style={[styles.productImagePlaceholder, { backgroundColor: HEADER_COLORS[0] }]}>
-            <Text style={styles.productImagePlaceholderText}>{item.brand.charAt(0)}</Text>
-          </View>
-        )}
-        {!item.inStock && (
-          <View style={styles.outOfStockBadge}>
-            <Text style={styles.outOfStockText}>Out of Stock</Text>
           </View>
         )}
       </View>
 
       <View style={viewType === 'grid' ? styles.gridProductInfo : styles.listProductInfo}>
         <Text style={styles.productBrand}>{item.brand}</Text>
-        <Text style={styles.productName} numberOfLines={2}>
+        <Text style={styles.productName} numberOfLines={1}>
           {item.name}
         </Text>
         <Text style={styles.productSpecs} numberOfLines={1}>
@@ -269,13 +210,19 @@ const CategoryScreen = ({ route, navigation }: any) => {
         <View style={styles.productRating}>
         </View>
 
-        <View style={styles.priceAndAddContainer}>
-          <Text style={styles.productPrice}>{item.price}</Text>
-          <TouchableOpacity
+        <View style={styles.priceAndAddContainer} pointerEvents="box-none">
+          <Text style={styles.productPrice}>{item.price}$</Text>
+          {hasComponent(item) ? <TouchableOpacity
+            style={styles.hasButton}
+            disabled={true}
+            onPress={() => addComponentAndMove(item)}>
+            <Text style={styles.addButtonText}>Add</Text>
+          </TouchableOpacity> : <TouchableOpacity
             style={styles.addButton}
-            onPress={() => console.log(`Added product: ${item.name}`)}>
+            onPress={() => addComponentAndMove(item)}>
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
+          }
         </View>
       </View>
     </TouchableOpacity>
@@ -308,21 +255,12 @@ const CategoryScreen = ({ route, navigation }: any) => {
           <Search stroke="#666666" width={20} height={20} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search graphics cards..."
+            placeholder="Search something..."
             placeholderTextColor="#666666"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
-
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter stroke="#000000" width={20} height={20} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.sortButton}>
-          <Text style={styles.filterOptionText}>Sort</Text>
-          {/* <SortAsc stroke="#000000" width={20} height={20} /> */}
-        </TouchableOpacity>
       </View>
 
       <View style={styles.filterOptionsContainer}>
@@ -337,7 +275,7 @@ const CategoryScreen = ({ route, navigation }: any) => {
                 styles.filterOptionButton,
                 activeFilter === item && styles.activeFilterButton,
               ]}
-              onPress={() => setActiveFilter(item)}>
+              onPress={async () => setActiveFilter(item)}>
               <Text
                 style={[styles.filterOptionText, activeFilter === item && styles.activeFilterText]}>
                 {item}
@@ -349,11 +287,11 @@ const CategoryScreen = ({ route, navigation }: any) => {
       </View>
 
       <FlatList
-        data={pcComponents}
+        data={items}
         renderItem={renderProductItem}
-        keyExtractor={(item) => item.id}
-        numColumns={viewType === 'grid' ? 2 : 1}
-        key={viewType} // Force re-render when view type changes
+        keyExtractor={(item, index) => `${item.id}-${index}`} // Use combination of id and index
+        numColumns={viewType === "grid" ? 2 : 1}
+        key={viewType}
         contentContainerStyle={styles.productsList}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -362,6 +300,8 @@ const CategoryScreen = ({ route, navigation }: any) => {
             <Text style={styles.emptyListSubtext}>Try adjusting your search or filters</Text>
           </View>
         }
+        onEndReached={({ distanceFromEnd }) => fetchBuilds()}
+        onEndReachedThreshold={0.5}
       />
     </SafeAreaView>
   );
@@ -617,6 +557,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666666', // Chữ phụ: xám đậm
     textAlign: 'center',
+  },
+  hasButton: {
+    backgroundColor: '#D3D3D3', // Màu xám
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
 });
 

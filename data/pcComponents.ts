@@ -1,11 +1,6 @@
-export type ComponentType =
-  | 'CPU'
-  | 'Motherboard'
-  | 'RAM'
-  | 'GPU'
-  | 'Storage'
-  | 'Keyboard'
-  | 'Mouse';
+
+export type ComponentType = "CPU" | "Motherboard" | "RAM" | "GPU" | "Storage" | "Keyboard" | "Mouse"
+
 
 export interface TPcComponent {
   id: string;
@@ -326,14 +321,15 @@ export const pcComponents: TPcComponent[] = [
     description: 'Reliable hard drive for mass storage needs.',
     price: 49.99,
     rating: 4,
-    image: 'https://placeholder.svg?height=300&width=300',
+    image: "https://placeholder.svg?height=300&width=300",
     specs: {
-      capacity: '2TB',
-      interface: 'SATA 6Gb/s',
-      formFactor: '3.5-inch',
-      rpm: '7200 RPM',
-      cacheSize: '256MB',
+      capacity: "2TB",
+      interface: "SATA 6Gb/s",
+      formFactor: "3.5-inch",
+      rpm: "7200 RPM",
+      cacheSize: "256MB",
     },
-    compatibility: ['SATA port', '3.5-inch drive bay'],
+    compatibility: ["SATA port", "3.5-inch drive bay"],
   },
-];
+]
+
