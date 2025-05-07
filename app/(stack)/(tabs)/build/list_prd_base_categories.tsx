@@ -19,175 +19,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { TPcComponent, pcComponents } from "~/data/pcComponents"
 import { usePcComponentStore } from '~/data/usePcComponentStore';
 import axios from 'axios';
-
-// Sample data for GPUs
-const gpuData = [
-    {
-        id: '1',
-        name: 'NVIDIA RTX 3050',
-        brand: 'Gigabyte',
-        price: '$249',
-        specs: '8GB GDDR6, 2560 CUDA Cores',
-        rating: 4.3,
-        reviews: 128,
-        image:
-            'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0jKlHyWoB3HOv2qnniF7OplneySjzx.png',
-        inStock: true,
-    },
-    {
-        id: '2',
-        name: 'NVIDIA RTX 4060',
-        brand: 'MSI',
-        price: '$299',
-        specs: '8GB GDDR6X, 3072 CUDA Cores',
-        rating: 4.5,
-        reviews: 87,
-        image: null,
-        inStock: true,
-    },
-    {
-        id: '3',
-        name: 'NVIDIA RTX 3060 Ti',
-        brand: 'ASUS',
-        price: '$399',
-        specs: '8GB GDDR6, 4864 CUDA Cores',
-        rating: 4.7,
-        reviews: 256,
-        image: null,
-        inStock: true,
-    },
-    {
-        id: '4',
-        name: 'AMD Radeon RX 6600',
-        brand: 'Sapphire',
-        price: '$279',
-        specs: '8GB GDDR6, 1792 Stream Processors',
-        rating: 4.2,
-        reviews: 112,
-        image: null,
-        inStock: true,
-    },
-    {
-        id: '5',
-        name: 'NVIDIA RTX 4070',
-        brand: 'EVGA',
-        price: '$599',
-        specs: '12GB GDDR6X, 5888 CUDA Cores',
-        rating: 4.8,
-        reviews: 94,
-        image: null,
-        inStock: false,
-    },
-    {
-        id: '6',
-        name: 'AMD Radeon RX 7600',
-        brand: 'XFX',
-        price: '$269',
-        specs: '8GB GDDR6, 2048 Stream Processors',
-        rating: 4.1,
-        reviews: 76,
-        image: null,
-        inStock: true,
-    },
-    {
-        id: '7',
-        name: 'NVIDIA RTX 4060 Ti',
-        brand: 'Zotac',
-        price: '$449',
-        specs: '16GB GDDR6, 4352 CUDA Cores',
-        rating: 4.6,
-        reviews: 63,
-        image: null,
-        inStock: true,
-    },
-    {
-        id: '8',
-        name: 'AMD Radeon RX 6700 XT',
-        brand: 'PowerColor',
-        price: '$429',
-        specs: '12GB GDDR6, 2560 Stream Processors',
-        rating: 4.4,
-        reviews: 142,
-        image: null,
-        inStock: true,
-    },
-];
-
-// Sample data for CPUs
-const cpuData = [
-    {
-        id: '1',
-        name: 'AMD Ryzen 5 5600X',
-        brand: 'AMD',
-        price: '$199',
-        specs: '6 Cores, 12 Threads, 3.7GHz Base',
-        image: null,
-        inStock: true,
-    },
-    {
-        id: '2',
-        name: 'Intel Core i5-12600K',
-        brand: 'Intel',
-        price: '$249',
-        specs: '10 Cores, 16 Threads, 3.7GHz Base',
-        image: null,
-        inStock: true,
-    },
-    {
-        id: '3',
-        name: 'AMD Ryzen 7 5800X3D',
-        brand: 'AMD',
-        price: '$329',
-        specs: '8 Cores, 16 Threads, 3.4GHz Base',
-        image: null,
-        inStock: false,
-    },
-    {
-        id: '4',
-        name: 'Intel Core i7-13700K',
-        brand: 'Intel',
-        price: '$409',
-        specs: '16 Cores, 24 Threads, 3.4GHz Base',
-        image: null,
-        inStock: true,
-    },
-    {
-        id: '5',
-        name: 'AMD Ryzen 9 7900X',
-        brand: 'AMD',
-        price: '$449',
-        specs: '12 Cores, 24 Threads, 4.7GHz Base',
-        image: null,
-        inStock: true,
-    },
-    {
-        id: '6',
-        name: 'Intel Core i9-13900K',
-        brand: 'Intel',
-        price: '$589',
-        specs: '24 Cores, 32 Threads, 3.0GHz Base',
-        image: null,
-        inStock: true,
-    },
-];
-
-// Category data
-const categories = {
-    'Graphics Cards': {
-        title: 'Graphics Cards',
-        data: gpuData,
-        color: ['#FF7675', '#D63031'],
-        icon: '🎮',
-    },
-    Processors: {
-        title: 'Processors',
-        data: cpuData,
-        color: ['#74B9FF', '#0984E3'],
-        icon: '⚡',
-    },
-};
-
-
+import { useNavigationStore } from "~/libs/stateChangePage"
 
 // Định nghĩa màu của header
 const HEADER_COLORS = COLORS.MainBlue; // Gradient xanh dương nhạt đến đậm
@@ -201,7 +33,6 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
     const hasComponent = usePcComponentStore((state) => state.hasComponent)
 
     //@ts-ignore
-    const category = categories[categoryName];
     const { type } = useLocalSearchParams();
     const typeObj = type ? JSON.parse(type as string) : null;
 
@@ -209,22 +40,6 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
     const [activeFilter, setActiveFilter] = useState('All');
     const [viewType, setViewType] = useState('grid'); // 'grid' or 'list'
 
-    // Filter options
-    const filterOptions = ['All', 'In Stock', 'NVIDIA', 'AMD'];
-
-    // Filter products based on search and active filter
-    const filteredProducts = category.data.filter((product: any) => {
-        const matchesSearch =
-            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.brand.toLowerCase().includes(searchQuery.toLowerCase());
-
-        if (activeFilter === 'All') return matchesSearch;
-        if (activeFilter === 'In Stock') return matchesSearch && product.inStock;
-        if (activeFilter === 'NVIDIA') return matchesSearch && product.name.includes('NVIDIA');
-        if (activeFilter === 'AMD') return matchesSearch && product.name.includes('AMD');
-
-        return matchesSearch;
-    });
 
     const [items, setItems] = useState<TPcComponent[]>([]);
     const [page, setPage] = useState(1);
@@ -290,21 +105,86 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
         router.back()
     }
 
+    const productDetail = (product: TPcComponent) => {
+        useNavigationStore.getState().setData("product", product);
+        router.push("/(stack)/(tabs)/home/product_detail")
+    }
+
+    const fetchBuildsByQuery = useCallback(
+        async (query = '') => {
+            if (loading || (totalPages && page > totalPages)) return;
+
+            let apiUrl;
+            switch (typeObj) {
+                case "CPU":
+                    apiUrl = "http://192.168.1.5:5000/api/cpu/paginated";
+                    break;
+                case "Motherboard":
+                    apiUrl = "http://192.168.1.5:5000/api/motherboard/paginated";
+                    break;
+                case "RAM":
+                    apiUrl = "http://192.168.1.5:5000/api/memory/paginated";
+                    break;
+                case "GPU":
+                    apiUrl = "http://192.168.1.5:5000/api/gpu/paginated";
+                    break;
+                case "Storage":
+                    apiUrl = "http://192.168.1.5:5000/api/drive/paginated";
+                    break;
+                case "Keyboard":
+                    apiUrl = "http://192.168.1.5:5000/api/keyboard/paginated";
+                    break;
+                case "Mouse":
+                    apiUrl = "http://192.168.1.5:5000/api/mouse/paginated";
+                    break;
+                default:
+                    return;
+            }
+
+            setLoading(true);
+            try {
+                const res = await axios.get(apiUrl, {
+                    params: {
+                        page,
+                        name: query.trim(), // thêm query tìm kiếm
+                    },
+                    headers: {
+                        Authorization: `Bearer yourToken`,
+                    },
+                });
+
+                setItems((prev) => [...prev, ...res.data.items]);
+                setTotalPages(res.data.totalPages);
+                setPage((prev) => prev + 1);
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu:", error);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [page, totalPages, loading, activeFilter]
+    );
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setItems([]);
+            setPage(1); // reset về trang đầu
+            fetchBuildsByQuery(searchQuery);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery, activeFilter]);
+
     const renderProductItem = ({ item }: any) => (
         <TouchableOpacity
             style={viewType === 'grid' ? styles.gridItem : styles.listItem}
-            onPress={() => console.log(`Selected product: ${item.name}`)}>
+            onPress={() => productDetail(item)}>
             <View style={viewType === 'grid' ? styles.gridImageContainer : styles.listImageContainer}>
                 {item.image ? (
                     <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
                 ) : (
                     <View style={[styles.productImagePlaceholder, { backgroundColor: HEADER_COLORS[0] }]}>
                         {/* <Text style={styles.productImagePlaceholderText}>{item.brand.charAt(0)}</Text> */}
-                    </View>
-                )}
-                {!item.inStock && (
-                    <View style={styles.outOfStockBadge}>
-                        <Text style={styles.outOfStockText}>Out of Stock</Text>
                     </View>
                 )}
             </View>
@@ -369,40 +249,7 @@ const LstPrdBaseCategorySc = ({ route, navigation }: any) => {
                         onChangeText={setSearchQuery}
                     />
                 </View>
-
-                <TouchableOpacity style={styles.filterButton}>
-                    <Filter stroke="#000000" width={20} height={20} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.sortButton}>
-                    <Text style={styles.filterOptionText}>Sort</Text>
-                    {/* <SortAsc stroke="#000000" width={20} height={20} /> */}
-                </TouchableOpacity>
             </View>
-
-            <View style={styles.filterOptionsContainer}>
-                <FlatList
-                    data={filterOptions}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={[
-                                styles.filterOptionButton,
-                                activeFilter === item && styles.activeFilterButton,
-                            ]}
-                            onPress={() => setActiveFilter(item)}>
-                            <Text
-                                style={[styles.filterOptionText, activeFilter === item && styles.activeFilterText]}>
-                                {item}
-                            </Text>
-                        </TouchableOpacity>
-                    )}
-                    contentContainerStyle={styles.filterOptionsList}
-                />
-            </View>
-
 
             <FlatList
                 data={items}

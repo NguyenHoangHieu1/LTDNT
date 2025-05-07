@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import { useNavigationStore } from "~/libs/stateChangePage"
 import { TPcComponent } from "~/data/pcComponents"
+import { usePcComponentStore } from '~/data/usePcComponentStore';
 // import { useNavigation } from "@react-navigation/native"
 // import type { NativeStackNavigationProp } from "@react-navigation/native-stack"
 // import type { RootStackParamList } from "../types"
@@ -35,6 +36,9 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   const [quantity, setQuantity] = useState(1)
   // const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const router = useRouter()
+  const addComponent = usePcComponentStore((state) => state.addComponent)
+  const hadComponent = usePcComponentStore((state) => state.hasComponent)
+
   const renderStars = (rating: number) => {
     const stars = []
     for (let i = 1; i <= 5; i++) {
@@ -57,15 +61,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
   }
 
   const addToBuild = () => {
-    // Navigate to PC Builder screen with this product
-    // navigation.navigate("PCBuilder", { selectedComponent: product })
-    // @ts-ignore
-    router.push({
-      // @ts-ignore
-      pathname: "/(stack)/pc-builder",
-      // @ts-ignore
-      params: { selectedComponent: product },
-    })
+    addComponent(product)
+    router.replace("/(stack)/(tabs)/build")
   }
 
   return (
@@ -84,58 +81,26 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
 
         <View style={styles.infoContainer}>
           <Text style={styles.productName}>{product.name}</Text>
-          <View style={styles.ratingContainer}>
-            <View style={styles.starsContainer}>{renderStars(product.rating)}</View>
-            <Text style={styles.ratingText}>{product.rating} stars</Text>
-          </View>
           <Text style={styles.price}>${product.price}</Text>
-
-          <View style={styles.quantityContainer}>
-            <Text style={styles.quantityLabel}>Quantity:</Text>
-            <View style={styles.quantityControls}>
-              <TouchableOpacity onPress={decreaseQuantity} style={styles.quantityButton}>
-                <Text style={styles.quantityButtonText}>-</Text>
-              </TouchableOpacity>
-              <Text style={styles.quantityValue}>{quantity}</Text>
-              <TouchableOpacity onPress={increaseQuantity} style={styles.quantityButton}>
-                <Text style={styles.quantityButtonText}>+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.descriptionText}>{product.description}</Text>
-          </View>
 
           <View style={styles.specsContainer}>
             <Text style={styles.sectionTitle}>Specifications</Text>
             {Object.entries(product.specs).map(([key, value]) => (
               <View key={key} style={styles.specRow}>
-                <Text style={styles.specKey}>{key}</Text>
-                <Text style={styles.specValue}>{value}</Text>
+                <Text style={styles.specKey} numberOfLines={1}>{key}</Text>
+                <Text style={styles.specValue}>{String(value)}</Text>
               </View>
-            ))}
-          </View>
-
-          <View style={styles.compatibilityContainer}>
-            <Text style={styles.sectionTitle}>Compatible With</Text>
-            {product.compatibility.map((item: any, index: any) => (
-              <Text key={index} style={styles.compatibilityItem}>
-                • {item}
-              </Text>
             ))}
           </View>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.homeButton} onPress={() => router.navigate("/")}>
-          <Text style={styles.buttonText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.buildButton} onPress={addToBuild}>
+        {hadComponent(product) ? <TouchableOpacity style={styles.hasButton} onPress={addToBuild} disabled={true}>
           <Text style={styles.buttonText}>Add to Build</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> : <TouchableOpacity style={styles.buildButton} onPress={addToBuild}>
+          <Text style={styles.buttonText}>Add to Build</Text>
+        </TouchableOpacity>}
       </View>
     </SafeAreaView>
   )
@@ -252,12 +217,12 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
   },
   specKey: {
-    flex: 1,
+    flex: 1.5,
     fontSize: 14,
     color: "#666",
   },
   specValue: {
-    flex: 2,
+    flex: 1.5,
     fontSize: 14,
     color: "#333",
   },
@@ -270,12 +235,10 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    height: 60,
+    backgroundColor: "#fff",
+    padding: 15,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
   },
   homeButton: {
     flex: 1,
@@ -284,15 +247,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buildButton: {
-    flex: 1,
-    backgroundColor: "#0084C8",
-    justifyContent: "center",
+    backgroundColor: "#00b16a",
+    padding: 15,
+    borderRadius: 8,
     alignItems: "center",
   },
   buttonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  hasButton: {
+    backgroundColor: '#D3D3D3', // Màu xám
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
   },
 })
 

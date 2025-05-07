@@ -124,42 +124,32 @@ const ProfileScreen: React.FC = () => {
     return pcBuilds;
   }
 
+  const fetchBuilds = async () => {
+    try {
+      const res = await fetch("http://192.168.1.5:5000/api/build");
+      const builds = await res.json();
+      const pcBuilds = await transformToPcBuilds(builds);
+      setBuilds(pcBuilds);
+    } catch (err) {
+      console.error("Lỗi khi fetch builds:", err);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const fetchBuilds = async () => {
-        try {
-          const res = await fetch("http://192.168.1.5:5000/api/build");
-          const builds = await res.json();
-          const pcBuilds = await transformToPcBuilds(builds);
-          setBuilds(pcBuilds);
-        } catch (err) {
-          console.error("Lỗi khi fetch builds:", err);
-        }
-      };
-
       fetchBuilds();
     }, [])
   )
 
-  const handleDeleteBuild = (buildId: string) => {
-    Alert.alert(
-      "Delete Build",
-      "Are you sure you want to delete this build?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          onPress: () => {
-            setSavedBuilds(savedBuilds.filter((build) => build.id !== buildId))
-          },
-          style: "destructive",
-        },
-      ],
-      { cancelable: true },
-    )
+  const handleDeleteBuild = async (buildId: string) => {
+    try {
+      console.log(buildId)
+      const res = await axios.delete(`http://192.168.1.5:5000/api/build/${buildId}`);
+      console.log(res.data.message);
+      fetchBuilds();
+    } catch (error) {
+      console.error("Lỗi khi xóa build:", error);
+    }
   }
 
 
