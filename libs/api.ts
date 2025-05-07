@@ -5,8 +5,8 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 // For Android emulator, use 10.0.2.2 to access localhost
 // For iOS simulator, use localhost
 // For physical devices, use your computer's IP address on the same network
-const API_URL = 'http://10.0.2.2:5000/api'; // Android emulator example
-// const API_URL = 'http://192.168.1.3:5000/api'; // Android emulator example
+// const API_URL = 'http://10.0.2.2:5000/acpi'; // Android emulator example
+const API_URL = 'http://192.168.1.14:5000/api'; // Android phone example
 
 // Create axios instance
 const api = axios.create({
@@ -115,6 +115,46 @@ export const authAPI = {
     return response.data;
   },
 };
+
+const generatePcPartsAPI = (endpoint: string) => ({
+  getAll: async () => {
+    const response = await api.get(`/${endpoint}`);
+    return response.data;
+  },
+
+  getById: async (id: string) => {
+    const response = await api.get(`/${endpoint}/${id}`);
+    return response.data;
+  },
+
+  create: async (data: any) => {
+    const response = await api.post(`/${endpoint}`, data);
+    return response.data;
+  },
+
+  update: async (id: string, data: any) => {
+    const response = await api.put(`/${endpoint}/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await api.delete(`/${endpoint}/${id}`);
+    return response.data;
+  },
+
+  getPaginated: async (page: number = 1, limit: number = 10) => {
+    const response = await api.get(`/${endpoint}/paginated?page=${page}&limit=${limit}`);
+    return response.data;
+  },
+});
+
+export const cpuAPI = generatePcPartsAPI('cpu');
+export const gpuAPI = generatePcPartsAPI('gpu');
+export const motherboardAPI = generatePcPartsAPI('motherboard');
+export const driveAPI = generatePcPartsAPI('drive');
+export const memoryAPI = generatePcPartsAPI('memory');
+export const keyboardAPI = generatePcPartsAPI('keyboard');
+export const mouseAPI = generatePcPartsAPI('mouse');
 
 // Products API
 export const productsAPI = {

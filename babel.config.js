@@ -5,8 +5,10 @@ module.exports = function (api) {
   plugins.push('react-native-reanimated/plugin');
 
   return {
-    presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
-
+    presets: [
+      ['babel-preset-expo', { jsxImportSource: 'nativewind', unstable_transformImportMeta: true }],
+      'nativewind/babel',
+    ],
     plugins,
   };
 };

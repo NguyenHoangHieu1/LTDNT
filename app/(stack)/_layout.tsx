@@ -6,7 +6,7 @@ const StackLayout = () => {
       screenOptions={{
         headerShown: false,
       }}>
-      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(tabs)/home" />
     </Stack>
   );
 };
