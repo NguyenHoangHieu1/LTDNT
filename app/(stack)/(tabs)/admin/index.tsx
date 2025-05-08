@@ -33,14 +33,14 @@ const componentTypes: {
   count: number;
   route: AdminRoute;
 }[] = [
-  { name: 'CPU', icon: withFeatherIcon('cpu'), count: 12, route: 'cpu' },
-  { name: 'Motherboard', icon: withFeatherIcon('box'), count: 8, route: 'motherboard' },
-  { name: 'GPU', icon: withFeatherIcon('monitor'), count: 15, route: 'gpu' },
-  { name: 'RAM', icon: withFeatherIcon('database'), count: 10, route: 'ram' },
-  { name: 'Storage', icon: withFeatherIcon('hard-drive'), count: 14, route: 'storage' },
-  { name: 'Keyboard', icon: withFontAwesome('keyboard-o'), count: 6, route: 'keyboard' },
-  { name: 'Mouse', icon: withMaterialIcon('mouse'), count: 7, route: 'mouse' },
-];
+    { name: 'CPU', icon: withFeatherIcon('cpu'), count: 493, route: 'cpu' },
+    { name: 'Motherboard', icon: withFeatherIcon('box'), count: 8, route: 'motherboard' },
+    { name: 'GPU', icon: withFeatherIcon('monitor'), count: 15, route: 'gpu' },
+    { name: 'RAM', icon: withFeatherIcon('database'), count: 10, route: 'ram' },
+    { name: 'Storage', icon: withFeatherIcon('hard-drive'), count: 14, route: 'storage' },
+    { name: 'Keyboard', icon: withFontAwesome('keyboard-o'), count: 6, route: 'keyboard' },
+    { name: 'Mouse', icon: withMaterialIcon('mouse'), count: 7, route: 'mouse' },
+  ];
 
 const AdminScreen = () => {
   const router = useRouter();

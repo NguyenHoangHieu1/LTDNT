@@ -9,6 +9,7 @@ import {
   FlatList,
   StatusBar,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,6 +21,7 @@ import { usePcComponentStore } from '~/data/usePcComponentStore';
 import { useNavigationStore } from '~/libs/stateChangePage';
 import axios from 'axios';
 import { API_URL } from '~/libs/api';
+import { cpuImageUrls } from '~/data/image';
 
 // Định nghĩa màu của header
 const HEADER_COLORS = COLORS.MainBlue; // Gradient xanh dương nhạt đến đậm
@@ -42,14 +44,20 @@ const CategoryScreen = ({ route, navigation }: any) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const addComponent = usePcComponentStore((state) => state.addComponent);
   const hasComponent = usePcComponentStore((state) => state.hasComponent);
 
+  const setActiveFilterVsLoading = (item: string) => {
+    setLoading(true)
+    setActiveFilter(item)
+    setLoading(false)
+  }
+
   const fetchBuilds = useCallback(
     async (filter = activeFilter) => {
       if (loading || (totalPages && page > totalPages)) return;
-
       console.log(filter);
       let apiUrl;
       switch (filter) {
@@ -77,8 +85,6 @@ const CategoryScreen = ({ route, navigation }: any) => {
         default:
           return;
       }
-
-      setLoading(true);
       console.log(apiUrl);
       try {
         const res = await axios.get(apiUrl, {
@@ -97,7 +103,7 @@ const CategoryScreen = ({ route, navigation }: any) => {
         setLoading(false);
       }
     },
-    [page, totalPages, loading, activeFilter]
+    [page, totalPages, activeFilter]
   );
 
   useEffect(() => {
@@ -136,8 +142,6 @@ const CategoryScreen = ({ route, navigation }: any) => {
         default:
           return;
       }
-
-      setLoading(true);
       try {
         const res = await axios.get(apiUrl, {
           params: {
@@ -158,7 +162,7 @@ const CategoryScreen = ({ route, navigation }: any) => {
         setLoading(false);
       }
     },
-    [page, totalPages, loading, activeFilter]
+    [page, totalPages, activeFilter]
   );
 
   useEffect(() => {
@@ -167,7 +171,6 @@ const CategoryScreen = ({ route, navigation }: any) => {
       setPage(1); // reset về trang đầu
       fetchBuildsByQuery(activeFilter, searchQuery);
     }, 300);
-
     return () => clearTimeout(timer);
   }, [searchQuery, activeFilter]);
 
@@ -181,17 +184,17 @@ const CategoryScreen = ({ route, navigation }: any) => {
     router.replace('/(stack)/(tabs)/build');
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    setRefreshing(false);
+  };
+
   const renderProductItem = ({ item }: any) => (
     <TouchableOpacity
       style={viewType === 'grid' ? styles.gridItem : styles.listItem}
       onPress={() => productDetail(item)}>
       <View style={viewType === 'grid' ? styles.gridImageContainer : styles.listImageContainer}>
-        {item.image ? (
-          <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
-        ) : (
-          <View
-            style={[styles.productImagePlaceholder, { backgroundColor: HEADER_COLORS[0] }]}></View>
-        )}
+        <Image source={{ uri: item.specs.image ? item.specs.image : cpuImageUrls }} style={styles.productImage} resizeMode="cover" />
       </View>
 
       <View style={viewType === 'grid' ? styles.gridProductInfo : styles.listProductInfo}>
@@ -274,7 +277,7 @@ const CategoryScreen = ({ route, navigation }: any) => {
                 styles.filterOptionButton,
                 activeFilter === item && styles.activeFilterButton,
               ]}
-              onPress={async () => setActiveFilter(item)}>
+              onPress={async () => setActiveFilterVsLoading(item)}>
               <Text
                 style={[styles.filterOptionText, activeFilter === item && styles.activeFilterText]}>
                 {item}
@@ -284,24 +287,20 @@ const CategoryScreen = ({ route, navigation }: any) => {
           contentContainerStyle={styles.filterOptionsList}
         />
       </View>
-
-      <FlatList
-        data={items}
-        renderItem={renderProductItem}
-        keyExtractor={(item, index) => `${item.id}-${index}`} // Use combination of id and index
-        numColumns={viewType === 'grid' ? 2 : 1}
-        key={viewType}
-        contentContainerStyle={styles.productsList}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyListContainer}>
-            <Text style={styles.emptyListText}>No products found</Text>
-            <Text style={styles.emptyListSubtext}>Try adjusting your search or filters</Text>
-          </View>
-        }
-        onEndReached={({ distanceFromEnd }) => fetchBuilds()}
-        onEndReachedThreshold={0.5}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#000" style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={items}
+          renderItem={renderProductItem}
+          keyExtractor={(item, index) => `${item.id}-${index}`} // Use combination of id and index
+          numColumns={viewType === 'grid' ? 2 : 1}
+          key={viewType}
+          contentContainerStyle={styles.productsList}
+          showsVerticalScrollIndicator={false}
+          onEndReached={({ distanceFromEnd }) => fetchBuilds()}
+          onEndReachedThreshold={0.5}
+        />)}
     </SafeAreaView>
   );
 };

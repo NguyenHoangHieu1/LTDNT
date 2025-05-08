@@ -8,6 +8,7 @@ import { useRouter } from "expo-router"
 import { useNavigationStore } from "~/libs/stateChangePage"
 import { TPcComponent } from "~/data/pcComponents"
 import { usePcComponentStore } from '~/data/usePcComponentStore';
+import { cpuImageUrls } from "~/data/image"
 // import { useNavigation } from "@react-navigation/native"
 // import type { NativeStackNavigationProp } from "@react-navigation/native-stack"
 // import type { RootStackParamList } from "../types"
@@ -76,7 +77,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = () => {
         </View>
 
         <View style={styles.imageContainer}>
-          <Image source={{ uri: product.image }} style={styles.productImage} resizeMode="contain" />
+          <Image source={{ uri: product.image ? product.image : cpuImageUrls }} style={styles.productImage} resizeMode="cover" />
         </View>
 
         <View style={styles.infoContainer}>
