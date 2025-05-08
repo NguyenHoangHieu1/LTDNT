@@ -5,7 +5,8 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 // For Android emulator, use 10.0.2.2 to access localhost
 // For iOS simulator, use localhost
 // For physical devices, use your computer's IP address on the same network
-const API_URL = 'http://10.0.2.2:5000/api'; // Android emulator example
+export const API_URL = 'http://10.0.2.2:5000/api'; // Android emulator example
+export const API_IMAGE_URL = 'http://10.0.2.2:5000';
 // const API_URL = 'http://192.168.1.14:5000/api'; // Android phone example
 
 // Create axios instance

@@ -16,8 +16,8 @@ import {
 import { useAuthStore } from '~/data/useAuthStore';
 
 const LoginScreen: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('hoanghieufro@gmail.com');
+  const [password, setPassword] = useState('123123123');
   const { signIn, loading, error } = useAuthStore((state) => state);
 
   const handleLogin = async () => {

@@ -50,7 +50,7 @@ export default function App() {
     }
 
     try {
-      const response = await axios.post('http://192.168.1.14:5000/suggest', {
+      const response = await axios.post('http://192.168.1.6:5000/suggest', {
         budget: Number(budget),
         purpose: selectedBuildType,
       });

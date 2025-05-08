@@ -14,11 +14,12 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Filter, Search } from 'react-native-feather';
 import { COLORS } from '~/theme/colors';
-import { Ionicons } from "@expo/vector-icons"
+import { Ionicons } from '@expo/vector-icons';
 import { pcComponents, TPcComponent } from '~/data/pcComponents';
 import { usePcComponentStore } from '~/data/usePcComponentStore';
 import { useNavigationStore } from '~/libs/stateChangePage';
 import axios from 'axios';
+import { API_URL } from '~/libs/api';
 
 // Định nghĩa màu của header
 const HEADER_COLORS = COLORS.MainBlue; // Gradient xanh dương nhạt đến đậm
@@ -35,75 +36,75 @@ const CategoryScreen = ({ route, navigation }: any) => {
   const [viewType, setViewType] = useState('grid'); // 'grid' or 'list'
 
   // Filter options
-  const filterOptions = ["CPU", "Motherboard", "RAM", "GPU", "Storage", "Keyboard", "Mouse"];
+  const filterOptions = ['CPU', 'Motherboard', 'RAM', 'GPU', 'Storage', 'Keyboard', 'Mouse'];
 
   const [items, setItems] = useState<TPcComponent[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const addComponent = usePcComponentStore((state) => state.addComponent)
-  const hasComponent = usePcComponentStore((state) => state.hasComponent)
+  const addComponent = usePcComponentStore((state) => state.addComponent);
+  const hasComponent = usePcComponentStore((state) => state.hasComponent);
 
   const fetchBuilds = useCallback(
     async (filter = activeFilter) => {
-      if (loading || (totalPages && page > totalPages)) return
+      if (loading || (totalPages && page > totalPages)) return;
 
-      console.log(filter)
-      let apiUrl
+      console.log(filter);
+      let apiUrl;
       switch (filter) {
-        case "CPU":
-          apiUrl = "http://192.168.1.5:5000/api/cpu/paginated"
-          break
-        case "Motherboard":
-          apiUrl = "http://192.168.1.5:5000/api/motherboard/paginated"
-          break
-        case "RAM":
-          apiUrl = "http://192.168.1.5:5000/api/memory/paginated"
-          break
-        case "GPU":
-          apiUrl = "http://192.168.1.5:5000/api/gpu/paginated"
-          break
-        case "Storage":
-          apiUrl = "http://192.168.1.5:5000/api/drive/paginated"
-          break
-        case "Keyboard":
-          apiUrl = "http://192.168.1.5:5000/api/keyboard/paginated"
-          break
-        case "Mouse":
-          apiUrl = "http://192.168.1.5:5000/api/mouse/paginated"
-          break
+        case 'CPU':
+          apiUrl = API_URL + '/cpu/paginated';
+          break;
+        case 'Motherboard':
+          apiUrl = API_URL + '/motherboard/paginated';
+          break;
+        case 'RAM':
+          apiUrl = API_URL + '/memory/paginated';
+          break;
+        case 'GPU':
+          apiUrl = API_URL + '/gpu/paginated';
+          break;
+        case 'Storage':
+          apiUrl = API_URL + '/drive/paginated';
+          break;
+        case 'Keyboard':
+          apiUrl = API_URL + '/keyboard/paginated';
+          break;
+        case 'Mouse':
+          apiUrl = API_URL + '/mouse/paginated';
+          break;
         default:
-          return
+          return;
       }
 
-      setLoading(true)
-      console.log(apiUrl)
+      setLoading(true);
+      console.log(apiUrl);
       try {
         const res = await axios.get(apiUrl, {
           params: { page },
           headers: {
             Authorization: `Bearer yourToken`, // nếu API có bảo vệ
           },
-        })
+        });
 
-        setItems((prev) => [...prev, ...res.data.items])
-        setTotalPages(res.data.totalPages)
-        setPage((prev) => prev + 1)
+        setItems((prev) => [...prev, ...res.data.items]);
+        setTotalPages(res.data.totalPages);
+        setPage((prev) => prev + 1);
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error)
+        console.error('Lỗi khi lấy dữ liệu:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     },
-    [page, totalPages, loading, activeFilter],
-  )
+    [page, totalPages, loading, activeFilter]
+  );
 
   useEffect(() => {
-    setItems([])
-    setPage(1) // Reset page when filter changes
-    fetchBuilds(activeFilter)
-  }, [activeFilter])
+    setItems([]);
+    setPage(1); // Reset page when filter changes
+    fetchBuilds(activeFilter);
+  }, [activeFilter]);
 
   const fetchBuildsByQuery = useCallback(
     async (filter = activeFilter, query = '') => {
@@ -111,26 +112,26 @@ const CategoryScreen = ({ route, navigation }: any) => {
 
       let apiUrl;
       switch (filter) {
-        case "CPU":
-          apiUrl = "http://192.168.1.5:5000/api/cpu/paginated";
+        case 'CPU':
+          apiUrl = API_URL + '/cpu/paginated';
           break;
-        case "Motherboard":
-          apiUrl = "http://192.168.1.5:5000/api/motherboard/paginated";
+        case 'Motherboard':
+          apiUrl = API_URL + '/motherboard/paginated';
           break;
-        case "RAM":
-          apiUrl = "http://192.168.1.5:5000/api/memory/paginated";
+        case 'RAM':
+          apiUrl = API_URL + '/memory/paginated';
           break;
-        case "GPU":
-          apiUrl = "http://192.168.1.5:5000/api/gpu/paginated";
+        case 'GPU':
+          apiUrl = API_URL + '/gpu/paginated';
           break;
-        case "Storage":
-          apiUrl = "http://192.168.1.5:5000/api/drive/paginated";
+        case 'Storage':
+          apiUrl = API_URL + '/drive/paginated';
           break;
-        case "Keyboard":
-          apiUrl = "http://192.168.1.5:5000/api/keyboard/paginated";
+        case 'Keyboard':
+          apiUrl = API_URL + '/keyboard/paginated';
           break;
-        case "Mouse":
-          apiUrl = "http://192.168.1.5:5000/api/mouse/paginated";
+        case 'Mouse':
+          apiUrl = API_URL + '/mouse/paginated';
           break;
         default:
           return;
@@ -152,7 +153,7 @@ const CategoryScreen = ({ route, navigation }: any) => {
         setTotalPages(res.data.totalPages);
         setPage((prev) => prev + 1);
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error);
+        console.error('Lỗi khi lấy dữ liệu:', error);
       } finally {
         setLoading(false);
       }
@@ -170,17 +171,15 @@ const CategoryScreen = ({ route, navigation }: any) => {
     return () => clearTimeout(timer);
   }, [searchQuery, activeFilter]);
 
-
-
   const productDetail = (product: TPcComponent) => {
-    useNavigationStore.getState().setData("product", product);
-    router.push("/(stack)/(tabs)/home/product_detail")
-  }
+    useNavigationStore.getState().setData('product', product);
+    router.push('/(stack)/(tabs)/home/product_detail');
+  };
 
   const addComponentAndMove = (item: any) => {
-    addComponent(item)
-    router.replace("/(stack)/(tabs)/build")
-  }
+    addComponent(item);
+    router.replace('/(stack)/(tabs)/build');
+  };
 
   const renderProductItem = ({ item }: any) => (
     <TouchableOpacity
@@ -190,8 +189,8 @@ const CategoryScreen = ({ route, navigation }: any) => {
         {item.image ? (
           <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="contain" />
         ) : (
-          <View style={[styles.productImagePlaceholder, { backgroundColor: HEADER_COLORS[0] }]}>
-          </View>
+          <View
+            style={[styles.productImagePlaceholder, { backgroundColor: HEADER_COLORS[0] }]}></View>
         )}
       </View>
 
@@ -207,22 +206,22 @@ const CategoryScreen = ({ route, navigation }: any) => {
             .join(' ')}
         </Text>
 
-        <View style={styles.productRating}>
-        </View>
+        <View style={styles.productRating}></View>
 
         <View style={styles.priceAndAddContainer} pointerEvents="box-none">
           <Text style={styles.productPrice}>{item.price}$</Text>
-          {hasComponent(item) ? <TouchableOpacity
-            style={styles.hasButton}
-            disabled={true}
-            onPress={() => addComponentAndMove(item)}>
-            <Text style={styles.addButtonText}>Add</Text>
-          </TouchableOpacity> : <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => addComponentAndMove(item)}>
-            <Text style={styles.addButtonText}>Add</Text>
-          </TouchableOpacity>
-          }
+          {hasComponent(item) ? (
+            <TouchableOpacity
+              style={styles.hasButton}
+              disabled={true}
+              onPress={() => addComponentAndMove(item)}>
+              <Text style={styles.addButtonText}>Add</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.addButton} onPress={() => addComponentAndMove(item)}>
+              <Text style={styles.addButtonText}>Add</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -290,7 +289,7 @@ const CategoryScreen = ({ route, navigation }: any) => {
         data={items}
         renderItem={renderProductItem}
         keyExtractor={(item, index) => `${item.id}-${index}`} // Use combination of id and index
-        numColumns={viewType === "grid" ? 2 : 1}
+        numColumns={viewType === 'grid' ? 2 : 1}
         key={viewType}
         contentContainerStyle={styles.productsList}
         showsVerticalScrollIndicator={false}
@@ -314,12 +313,12 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 60,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: '#eee',
   },
   backButton: {
     width: 40,
@@ -429,7 +428,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     maxWidth: '47.5%',
     borderWidth: 1,
-    borderColor: "#eee"
+    borderColor: '#eee',
   },
   listItem: {
     flex: 1,
