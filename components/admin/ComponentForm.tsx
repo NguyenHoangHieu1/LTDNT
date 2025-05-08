@@ -112,14 +112,11 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
     description: '',
     image: '',
     specs: {} as Record<string, string | number | boolean>,
-    compatibility: [] as string[],
   });
 
   const [specKeys, setSpecKeys] = useState<string[]>([]);
-  const [compatibilityItems, setCompatibilityItems] = useState<string[]>([]);
   const [newSpecKey, setNewSpecKey] = useState('');
   const [newSpecValue, setNewSpecValue] = useState('');
-  const [newCompatibilityItem, setNewCompatibilityItem] = useState('');
 
   // Set default spec keys based on component type
   useEffect(() => {
@@ -214,14 +211,8 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
             description: componentData.description,
             image: componentData.image,
             specs: cleanedSpecs,
-            compatibility: Array.isArray(componentData.compatibility)
-              ? [...componentData.compatibility]
-              : [],
           });
           setSpecKeys(Object.keys(cleanedSpecs));
-          setCompatibilityItems(
-            Array.isArray(componentData.compatibility) ? [...componentData.compatibility] : []
-          );
           console.log(componentData);
           console.log(cleanedSpecs);
         } catch (error) {
@@ -278,33 +269,6 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
     });
   };
 
-  const addCompatibilityItem = () => {
-    if (!newCompatibilityItem.trim()) {
-      Alert.alert('Error', 'Compatibility item cannot be empty');
-      return;
-    }
-
-    if (compatibilityItems.includes(newCompatibilityItem)) {
-      Alert.alert('Error', 'This compatibility item already exists');
-      return;
-    }
-
-    setCompatibilityItems((prev) => [...prev, newCompatibilityItem]);
-    setFormData((prev) => ({
-      ...prev,
-      compatibility: [...prev.compatibility, newCompatibilityItem],
-    }));
-    setNewCompatibilityItem('');
-  };
-
-  const removeCompatibilityItem = (itemToRemove: string) => {
-    setCompatibilityItems((prev) => prev.filter((item) => item !== itemToRemove));
-    setFormData((prev) => ({
-      ...prev,
-      compatibility: prev.compatibility.filter((item) => item !== itemToRemove),
-    }));
-  };
-
   const handleSubmit = async () => {
     // Validate form
     if (!formData.name?.trim()) {
@@ -318,7 +282,7 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
     }
 
     try {
-      const { specs, compatibility, ...restFormData } = formData;
+      const { specs, ...restFormData } = formData;
 
       const classifyFunction = componentUtils[`classify${componentType}Purpose`];
       const calculateScoreFunction = componentUtils[`calculate${componentType}Score`];
@@ -451,51 +415,6 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
                   </View>
                 );
               })}
-
-            <View style={styles.addSpecContainer}>
-              <TextInput
-                style={[styles.input, styles.addSpecInput]}
-                placeholder="Spec name"
-                value={newSpecKey}
-                onChangeText={setNewSpecKey}
-              />
-              <TextInput
-                style={[styles.input, styles.addSpecInput]}
-                placeholder="Spec value"
-                value={newSpecValue}
-                onChangeText={setNewSpecValue}
-              />
-              <TouchableOpacity style={styles.addButton} onPress={addNewSpec}>
-                <Text style={styles.addButtonText}>Add</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.formGroup}>
-            <Text style={styles.sectionTitle}>Compatibility</Text>
-
-            {compatibilityItems.map((item, index) => (
-              <View key={index} style={styles.compatibilityItem}>
-                <Text style={styles.compatibilityText}>{item}</Text>
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeCompatibilityItem(item)}>
-                  <X stroke="#fff" width={16} height={16} />
-                </TouchableOpacity>
-              </View>
-            ))}
-
-            <View style={styles.addCompatibilityContainer}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="Add compatibility item"
-                value={newCompatibilityItem}
-                onChangeText={setNewCompatibilityItem}
-              />
-              <TouchableOpacity style={styles.addButton} onPress={addCompatibilityItem}>
-                <Text style={styles.addButtonText}>Add</Text>
-              </TouchableOpacity>
-            </View>
           </View>
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
