@@ -14,8 +14,9 @@ import { usePcComponentStore } from '~/data/usePcComponentStore';
 import { PcBuild } from "~/data/usePcBuilds"
 import { usePcBuildStore } from "~/data/usePcBuilds"
 import { nanoid } from 'nanoid/non-secure'
-import { userId } from "~/data/userId"
 import axios from "axios"
+import { cpuImageUrls } from "~/data/image"
+import { useAuthStore } from "~/data/useAuthStore"
 
 
 type PCBuilderScreenProps = {
@@ -48,6 +49,7 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   const crtBuild = usePcBuildStore((state) => state.getCurrentBuild)
   const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild)
   const currentBuild = crtBuild()
+  const userId = useAuthStore((state) => state.user?._id);
   const typeToFieldMap: Record<ComponentType, string> = {
     CPU: 'cpuId',
     GPU: 'gpuId',
@@ -136,7 +138,7 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
 
         {component ? (
           <View style={styles.selectedComponent}>
-            <Image source={{ uri: component.image }} style={styles.componentImage} resizeMode="contain" />
+            <Image source={{ uri: component.image ? component.image : cpuImageUrls }} style={styles.componentImage} resizeMode="cover" />
             <View style={styles.componentInfo}>
               <Text style={styles.componentName}>{component.name}</Text>
               <Text style={styles.componentPrice}>${component.price}</Text>
@@ -261,9 +263,9 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
           setIsModalVisible(false);
 
           if (currentBuild) {
-            await updateBuild(buildName, userId, totalcost(), allComponents, currentBuild.id);
+            await updateBuild(buildName, userId!, totalcost(), allComponents, currentBuild.id);
           } else {
-            await createBuild(buildName, userId, totalcost(), allComponents);
+            await createBuild(buildName, userId!, totalcost(), allComponents);
           }
           clearComponents();
           setCurrentBuild("");

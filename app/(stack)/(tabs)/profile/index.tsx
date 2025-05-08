@@ -7,11 +7,10 @@ import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { useFocusEffect, useRouter } from "expo-router"
 import { usePcBuildStore } from "~/data/usePcBuilds"
-import moment from 'moment-timezone';
 import axios from "axios"
 import { TPcComponent } from "~/data/pcComponents"
 import { PcBuild } from "~/data/usePcBuilds"
-
+import { useAuthStore } from "~/data/useAuthStore"
 // Mock user data
 const mockUser = {
   id: "user123",
@@ -59,6 +58,7 @@ const ProfileScreen: React.FC = () => {
   const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild)
   const builds = usePcBuildStore((state) => state.builds)
   const setBuilds = usePcBuildStore((state) => state.setBuilds)
+  const userId = useAuthStore((state) => state.user?._id);
 
   const handleEditProfile = () => {
     Alert.alert("Edit Profile", "This feature will be available soon!")
@@ -87,7 +87,7 @@ const ProfileScreen: React.FC = () => {
 
   async function fetchComponentById(type: string, id: string): Promise<TPcComponent | null> {
     try {
-      const res = await axios.get(`http://192.168.1.5:5000/api/${type.toLowerCase()}/${id}`);
+      const res = await axios.get(`http://10.0.2.2:5000/api/${type.toLowerCase()}/${id}`);
       return res.data;
     } catch (error) {
       console.error(`Failed to fetch ${type} with id ${id}`, error);
@@ -126,8 +126,12 @@ const ProfileScreen: React.FC = () => {
 
   const fetchBuilds = async () => {
     try {
-      const res = await fetch("http://192.168.1.5:5000/api/build");
-      const builds = await res.json();
+      const res = await axios.get(`http://10.0.2.2:5000/api/build/user/${userId}`, {
+        headers: {
+          Authorization: `Bearer`,
+        },
+      });
+      const builds = res.data
       const pcBuilds = await transformToPcBuilds(builds);
       setBuilds(pcBuilds);
     } catch (err) {
@@ -144,7 +148,7 @@ const ProfileScreen: React.FC = () => {
   const handleDeleteBuild = async (buildId: string) => {
     try {
       console.log(buildId)
-      const res = await axios.delete(`http://192.168.1.5:5000/api/build/${buildId}`);
+      const res = await axios.delete(`http://10.0.2.2:5000/api/build/${buildId}`);
       console.log(res.data.message);
       fetchBuilds();
     } catch (error) {
