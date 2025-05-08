@@ -7,6 +7,7 @@ interface User {
   fullName: string;
   email: string;
   token: string;
+  createdAt: Date;
 }
 
 interface AuthState {
@@ -20,8 +21,8 @@ interface AuthState {
   signOut: () => Promise<void>;
 
   // Profile actions
-  updateProfile: (fullName: string, email: string) => Promise<void>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  updateProfile: (fullName: string, email: string, _id: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string, _id: string) => Promise<void>;
 
   // Session management
   refreshSession: () => Promise<void>;
@@ -113,6 +114,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             fullName: profile.fullName,
             email: profile.email,
             token,
+            createdAt: profile.createdAt,
           },
           loading: false,
         });
@@ -129,10 +131,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  updateProfile: async (fullName: string, email: string) => {
+  updateProfile: async (fullName: string, email: string, _id: string) => {
     try {
       set({ loading: true, error: null });
-      const userData = await authAPI.updateProfile(fullName, email);
+      const userData = await authAPI.updateProfile(fullName, email, _id);
 
       // Update token in AsyncStorage if it changed
       await AsyncStorage.setItem('userToken', userData.token);
@@ -152,10 +154,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  changePassword: async (currentPassword: string, newPassword: string) => {
+  changePassword: async (currentPassword: string, newPassword: string, _id: string) => {
     try {
       set({ loading: true, error: null });
-      await authAPI.changePassword(currentPassword, newPassword);
+      await authAPI.changePassword(currentPassword, newPassword, _id);
       set({ loading: false });
     } catch (error: any) {
       set({

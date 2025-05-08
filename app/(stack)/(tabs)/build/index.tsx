@@ -1,55 +1,65 @@
-"use client"
+'use client';
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaView, Alert, Modal, TextInput } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
+import type React from 'react';
+import { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
+  Alert,
+  Modal,
+  TextInput,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 // import { useNavigation } from "@react-navigation/native"
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 // import type { RootStackParamList } from "../types"
 import { useRouter } from 'expo-router';
-import type { ComponentType, TPcComponent } from "../../../../data/pcComponents"
-import { COLORS } from "~/theme/colors"
+import type { ComponentType, TPcComponent } from '../../../../data/pcComponents';
+import { COLORS } from '~/theme/colors';
 import { usePcComponentStore } from '~/data/usePcComponentStore';
-import { PcBuild } from "~/data/usePcBuilds"
-import { usePcBuildStore } from "~/data/usePcBuilds"
-import { nanoid } from 'nanoid/non-secure'
-import axios from "axios"
-import { cpuImageUrls } from "~/data/image"
-import { useAuthStore } from "~/data/useAuthStore"
-
+import { PcBuild } from '~/data/usePcBuilds';
+import { usePcBuildStore } from '~/data/usePcBuilds';
+import { nanoid } from 'nanoid/non-secure';
+import axios from 'axios';
+import { cpuImageUrls } from '~/data/image';
+import { useAuthStore } from '~/data/useAuthStore';
 
 type PCBuilderScreenProps = {
   route: {
     params?: {
-      selectedComponent?: TPcComponent
-    }
-  }
-}
+      selectedComponent?: TPcComponent;
+    };
+  };
+};
 
 const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   // const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const [selectedComponents, setSelectedComponents] = useState<{
-    [key in ComponentType]?: TPcComponent
-  }>({})
-  const [totalPrice, setTotalPrice] = useState(0)
-  const [compatibilityIssues, setCompatibilityIssues] = useState<string[]>([])
+    [key in ComponentType]?: TPcComponent;
+  }>({});
+  const userId = useAuthStore((state) => state.user)?._id;
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [compatibilityIssues, setCompatibilityIssues] = useState<string[]>([]);
   const router = useRouter();
-  const components = usePcComponentStore((state) => state.components)
-  const getComponentByType = usePcComponentStore((state) => state.getComponentByType)
-  const removeComponentByType = usePcComponentStore((state) => state.removeComponent)
-  const totalcost = usePcComponentStore((state) => state.getTotalPrice)
-  const getAllComponents = usePcComponentStore((state) => state.getAllComponents)
-  const allComponents = getAllComponents()
-  const clearComponents = usePcComponentStore((state) => state.clearComponents)
-  const setComponents = usePcComponentStore((state) => state.setComponents)
-  const [isModalVisible, setIsModalVisible] = useState(false)
-  const [buildName, setBuildName] = useState("")
-  const addBuild = usePcBuildStore((state) => state.addBuild)
-  const crtBuild = usePcBuildStore((state) => state.getCurrentBuild)
-  const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild)
-  const currentBuild = crtBuild()
-  const userId = useAuthStore((state) => state.user?._id);
+  const components = usePcComponentStore((state) => state.components);
+  const getComponentByType = usePcComponentStore((state) => state.getComponentByType);
+  const removeComponentByType = usePcComponentStore((state) => state.removeComponent);
+  const totalcost = usePcComponentStore((state) => state.getTotalPrice);
+  const getAllComponents = usePcComponentStore((state) => state.getAllComponents);
+  const allComponents = getAllComponents();
+  const clearComponents = usePcComponentStore((state) => state.clearComponents);
+  const setComponents = usePcComponentStore((state) => state.setComponents);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [buildName, setBuildName] = useState('');
+  const addBuild = usePcBuildStore((state) => state.addBuild);
+  const crtBuild = usePcBuildStore((state) => state.getCurrentBuild);
+  const setCurrentBuild = usePcBuildStore((state) => state.setCurrentBuild);
+  const currentBuild = crtBuild();
   const typeToFieldMap: Record<ComponentType, string> = {
     CPU: 'cpuId',
     GPU: 'gpuId',
@@ -62,71 +72,77 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
 
   useEffect(() => {
     if (currentBuild) {
-      setComponents(currentBuild.components)
+      setComponents(currentBuild.components);
     }
-  }, [currentBuild])
+  }, [currentBuild]);
 
   useEffect(() => {
-    let total = 0
+    let total = 0;
     Object.values(selectedComponents).forEach((component) => {
       if (component) {
-        total += component.price
+        total += component.price;
       }
-    })
-    setTotalPrice(total)
-    checkCompatibility()
-  }, [selectedComponents])
+    });
+    setTotalPrice(total);
+    checkCompatibility();
+  }, [selectedComponents]);
 
   const addComponent = (component: TPcComponent) => {
     setSelectedComponents((prev) => ({
       ...prev,
       [component.type]: component,
-    }))
-  }
+    }));
+  };
 
   const removeComponent = (type: ComponentType) => {
-    removeComponentByType(type)
-  }
+    removeComponentByType(type);
+  };
 
   const checkCompatibility = () => {
-    const issues: string[] = []
+    const issues: string[] = [];
 
     // CPU and Motherboard compatibility
-    const cpu = selectedComponents.CPU
-    const motherboard = selectedComponents.Motherboard
+    const cpu = selectedComponents.CPU;
+    const motherboard = selectedComponents.Motherboard;
     if (cpu && motherboard) {
       if (cpu.specs.socket !== motherboard.specs.socket) {
         issues.push(
-          `CPU socket (${cpu.specs.socket}) is not compatible with motherboard socket (${motherboard.specs.socket})`,
-        )
+          `CPU socket (${cpu.specs.socket}) is not compatible with motherboard socket (${motherboard.specs.socket})`
+        );
       }
     }
 
     // RAM and Motherboard compatibility
-    const ram = selectedComponents.RAM
+    const ram = selectedComponents.RAM;
     if (ram && motherboard) {
       if (ram.specs.type !== motherboard.specs.ramType) {
-        issues.push(`RAM type (${ram.specs.type}) is not compatible with motherboard (${motherboard.specs.ramType})`)
+        issues.push(
+          `RAM type (${ram.specs.type}) is not compatible with motherboard (${motherboard.specs.ramType})`
+        );
       }
     }
 
     // GPU and Power Supply compatibility
 
-
-    setCompatibilityIssues(issues)
-  }
+    setCompatibilityIssues(issues);
+  };
 
   const navigateToComponentSelection = (type: ComponentType) => {
     // navigation.navigate("ComponentList", { componentType: type })
     // @ts-ignore
-    console.log(type)
-    router.push({ pathname: "/(stack)/(tabs)/build/list_prd_base_categories", params: { type: JSON.stringify(type) } })
-  }
+    console.log(type);
+    router.push({
+      pathname: '/(stack)/(tabs)/build/list_prd_base_categories',
+      params: { type: JSON.stringify(type) },
+    });
+  };
 
   const renderComponentItem = (type: ComponentType, title: string) => {
-    let component = getComponentByType(type)
+    let component = getComponentByType(type);
     return (
-      <TouchableOpacity style={styles.componentCard} onPress={() => navigateToComponentSelection(type)}>
+      <TouchableOpacity
+        style={styles.componentCard}
+        onPress={() => navigateToComponentSelection(type)}>
         <View style={styles.componentHeader}>
           <Text style={styles.componentTitle}>{title}</Text>
           {component && (
@@ -138,7 +154,11 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
 
         {component ? (
           <View style={styles.selectedComponent}>
-            <Image source={{ uri: component.image ? component.image : cpuImageUrls }} style={styles.componentImage} resizeMode="cover" />
+            <Image
+              source={{ uri: component.image ? component.image : cpuImageUrls }}
+              style={styles.componentImage}
+              resizeMode="cover"
+            />
             <View style={styles.componentInfo}>
               <Text style={styles.componentName}>{component.name}</Text>
               <Text style={styles.componentPrice}>${component.price}</Text>
@@ -151,10 +171,15 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
           </View>
         )}
       </TouchableOpacity>
-    )
-  }
+    );
+  };
 
-  async function createBuild(name: string, userId: string, totalPrice: number, components: TPcComponent[]) {
+  async function createBuild(
+    name: string,
+    userId: string,
+    totalPrice: number,
+    components: TPcComponent[]
+  ) {
     const buildData: Record<string, string | number> = {
       name,
       userId,
@@ -178,7 +203,13 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
     }
   }
 
-  async function updateBuild(name: string, userId: string, totalPrice: number, components: TPcComponent[], id: string) {
+  async function updateBuild(
+    name: string,
+    userId: string,
+    totalPrice: number,
+    components: TPcComponent[],
+    id: string
+  ) {
     const buildData: Record<string, string | number> = {
       name,
       userId,
@@ -203,33 +234,41 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
   }
 
   const handleCompleteBuild = () => {
-    const requiredComponents: ComponentType[] = ["CPU", "Motherboard", "RAM", "Storage"]
-    const missingComponents = requiredComponents.filter((type) => !allComponents.some((comp) => comp.type === type))
+    const requiredComponents: ComponentType[] = ['CPU', 'Motherboard', 'RAM', 'Storage'];
+    const missingComponents = requiredComponents.filter(
+      (type) => !allComponents.some((comp) => comp.type === type)
+    );
 
     if (missingComponents.length > 0) {
-      Alert.alert("Incomplete Build", `Please select the following components: ${missingComponents.join(", ")}`, [
-        { text: "OK" },
-      ])
-      return
+      Alert.alert(
+        'Incomplete Build',
+        `Please select the following components: ${missingComponents.join(', ')}`,
+        [{ text: 'OK' }]
+      );
+      return;
     }
 
     if (compatibilityIssues.length > 0) {
-      Alert.alert("Compatibility Issues", "Your build has compatibility issues. Do you want to proceed anyway?", [
-        { text: "Cancel", style: "cancel" },
-        { text: "Proceed", onPress: () => completeBuild() },
-      ])
+      Alert.alert(
+        'Compatibility Issues',
+        'Your build has compatibility issues. Do you want to proceed anyway?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Proceed', onPress: () => completeBuild() },
+        ]
+      );
     } else {
       if (currentBuild) {
-        setBuildName(currentBuild.name)
+        setBuildName(currentBuild.name);
       }
-      setIsModalVisible(true)
+      setIsModalVisible(true);
     }
-  }
+  };
 
   const completeBuild = () => {
     if (!buildName.trim()) {
-      Alert.alert("Error", "Please enter a build name")
-      return
+      Alert.alert('Error', 'Please enter a build name');
+      return;
     }
 
     // Lưu build với tên buildName
@@ -254,11 +293,10 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
     //     }
     //   }]
     // )
-    Alert.alert(
-      "Build Saved!",
-      `Your PC build "${buildName}" has been saved!`,
-      [{
-        text: "OK", onPress: async () => {
+    Alert.alert('Build Saved!', `Your PC build "${buildName}" has been saved!`, [
+      {
+        text: 'OK',
+        onPress: async () => {
           // Đóng modal ngay sau khi nhấn "OK"
           setIsModalVisible(false);
 
@@ -268,24 +306,25 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
             await createBuild(buildName, userId!, totalcost(), allComponents);
           }
           clearComponents();
-          setCurrentBuild("");
-          setBuildName("");
-          router.back()
-        }
-      }]
-    )
-
-  }
+          setCurrentBuild('');
+          setBuildName('');
+          router.back();
+        },
+      },
+    ]);
+  };
 
   const handleBack = () => {
-    setIsModalVisible(false)
-    setBuildName("")
-  }
+    setIsModalVisible(false);
+    setBuildName('');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.navigate("/(stack)/(tabs)/home")} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.navigate('/(stack)/(tabs)/home')}
+          style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>PC Builder</Text>
@@ -305,13 +344,13 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
         )}
 
         <View style={styles.componentsContainer}>
-          {renderComponentItem("CPU", "CPU")}
-          {renderComponentItem("Motherboard", "Motherboard")}
-          {renderComponentItem("RAM", "RAM")}
-          {renderComponentItem("GPU", "Graphics Card")}
-          {renderComponentItem("Storage", "Storage")}
-          {renderComponentItem("Keyboard", "Keyboard")}
-          {renderComponentItem("Mouse", "Mouse")}
+          {renderComponentItem('CPU', 'CPU')}
+          {renderComponentItem('Motherboard', 'Motherboard')}
+          {renderComponentItem('RAM', 'RAM')}
+          {renderComponentItem('GPU', 'Graphics Card')}
+          {renderComponentItem('Storage', 'Storage')}
+          {renderComponentItem('Keyboard', 'Keyboard')}
+          {renderComponentItem('Mouse', 'Mouse')}
         </View>
       </ScrollView>
 
@@ -326,12 +365,7 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
       </View>
 
       {/* Modal cho popup */}
-      <Modal
-        visible={isModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={handleBack}
-      >
+      <Modal visible={isModalVisible} transparent animationType="fade" onRequestClose={handleBack}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Name Your Build</Text>
@@ -345,14 +379,12 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.backButtonModal]}
-                onPress={handleBack}
-              >
+                onPress={handleBack}>
                 <Text style={styles.modalButtonText}>Back</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.saveButton]}
-                onPress={completeBuild}
-              >
+                onPress={completeBuild}>
                 <Text style={styles.modalButtonText}>Save</Text>
               </TouchableOpacity>
             </View>
@@ -360,98 +392,98 @@ const PCBuilderScreen: React.FC<PCBuilderScreenProps> = () => {
         </View>
       </Modal>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 20,
-    width: "80%",
+    width: '80%',
     maxWidth: 400,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 15,
-    textAlign: "center",
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 8,
     padding: 10,
     marginBottom: 20,
     fontSize: 16,
   },
   modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   modalButton: {
     flex: 1,
     padding: 10,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
     marginHorizontal: 5,
   },
   backButtonModal: {
-    backgroundColor: "#666",
+    backgroundColor: '#666',
   },
   saveButton: {
-    backgroundColor: "#00b16a",
+    backgroundColor: '#00b16a',
   },
   modalButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   container: {
     flex: 1,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: '#f4f4f4',
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 15,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: '#eee',
   },
   backButton: {
     marginRight: 15,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   scrollContainer: {
     flex: 1,
   },
   compatibilityWarning: {
-    backgroundColor: "#FFF8E1",
+    backgroundColor: '#FFF8E1',
     padding: 15,
     margin: 10,
     borderRadius: 8,
     borderLeftWidth: 4,
-    borderLeftColor: "#FFA500",
+    borderLeftColor: '#FFA500',
   },
   warningTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 5,
-    color: "#333",
+    color: '#333',
   },
   warningText: {
     fontSize: 14,
-    color: "#555",
+    color: '#555',
     marginLeft: 10,
     marginTop: 2,
   },
@@ -459,33 +491,33 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   componentCard: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 15,
     marginBottom: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
   componentHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 10,
   },
   componentTitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
   },
   removeButton: {
     padding: 5,
   },
   selectedComponent: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   componentImage: {
     width: 80,
@@ -497,61 +529,60 @@ const styles = StyleSheet.create({
   },
   componentName: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
     marginBottom: 5,
   },
   componentPrice: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#0084C8",
+    fontWeight: 'bold',
+    color: '#0084C8',
   },
   emptyComponent: {
     height: 100,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderStyle: "dashed",
+    borderColor: '#ddd',
+    borderStyle: 'dashed',
     borderRadius: 8,
   },
   emptyComponentText: {
     marginTop: 10,
     color: COLORS.MainBlue,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   footer: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     padding: 15,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
+    borderTopColor: '#eee',
   },
   totalContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 15,
   },
   totalLabel: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   totalPrice: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#000",
+    fontWeight: 'bold',
+    color: '#000',
   },
   completeButton: {
-    backgroundColor: "#00b16a",
+    backgroundColor: '#00b16a',
     padding: 15,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
   completeButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
-})
+});
 
-export default PCBuilderScreen
-
+export default PCBuilderScreen;

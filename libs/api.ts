@@ -82,15 +82,16 @@ export const authAPI = {
     }
   },
 
-  updateProfile: async (fullName: string, email: string) => {
-    const response = await api.put('/auth/profile', { fullName, email });
+  updateProfile: async (fullName: string, email: string, _id: string) => {
+    const response = await api.put('/auth/profile', { fullName, email, _id });
     return response.data;
   },
 
-  changePassword: async (currentPassword: string, newPassword: string) => {
+  changePassword: async (currentPassword: string, newPassword: string, _id: string) => {
     const response = await api.put('/auth/change-password', {
       currentPassword,
       newPassword,
+      _id,
     });
     return response.data;
   },
