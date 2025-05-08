@@ -23,7 +23,7 @@ export function calculateCPUScore(specs: Specs) {
     graphics.includes('iris') || graphics.includes('pro') ? 5 : graphics.includes('uhd') ? 2 : 0;
 
   const rawScore = ((0.4 * core + 0.4 * (coreClock * 0.6 + boostClock * 0.4)) * (1 + smt)) / tdp;
-  return (rawScore + graphicsBonus).toFixed(2);
+  return parseFloat((rawScore + graphicsBonus).toFixed(2));
 }
 
 // Internal Hard Drive
@@ -58,7 +58,7 @@ export function calculateStorageScore(specs: Specs) {
   const cacheBonus = cache > 0 ? cache / 1000 : 0;
 
   const score = ((capacity / 1000) * speed * typeBonus + cacheBonus) / (price + 0.001);
-  return score.toFixed(2);
+  return parseFloat(score.toFixed(2));
 }
 
 // Keyboard
@@ -95,7 +95,7 @@ export function calculateKeyboardScore(specs: Specs) {
         : 0;
 
   const raw = (switchScore * 0.4 + backlitScore * 0.3 + connScore * 0.3) * 100;
-  return raw.toFixed(2);
+  return parseFloat(raw.toFixed(2));
 }
 
 // Mouse
@@ -124,7 +124,7 @@ export function calculateMouseScore(specs: Specs) {
         : 0;
 
   const raw = (dpiScore * 0.6 + connScore * 0.4) * 100;
-  return raw.toFixed(2);
+  return parseFloat(raw.toFixed(2));
 }
 
 // RAM
@@ -150,7 +150,7 @@ export function calculateRAMScore(specs: Specs) {
   const capBonus = cap / 32;
 
   const raw = 0.4 * speedBonus + 0.3 * latencyFactor + 0.3 * capBonus;
-  return (raw * 100).toFixed(2);
+  return parseFloat((raw * 100).toFixed(2));
 }
 
 // Motherboard
@@ -190,7 +190,7 @@ export function calculateMotherboardScore(specs: Specs) {
   const socketBonus = socketScoreMap[socket] ?? 0.5;
 
   const raw = 0.4 * memoryBonus + 0.3 * slotBonus + 0.3 * socketBonus;
-  return (raw * 100).toFixed(2);
+  return parseFloat((raw * 100).toFixed(2));
 }
 
 // GPU
@@ -212,5 +212,5 @@ export function calculateGPUScore(specs: Specs) {
   const cudaScore = (specs.cuda_cores || 0) / 16000;
 
   const rawScore = (clockScore * 0.5 + memoryScore * 0.3 + cudaScore * 0.2) * 100;
-  return Math.min(rawScore, 100).toFixed(2);
+  return parseFloat(Math.min(rawScore, 100).toFixed(2));
 }
