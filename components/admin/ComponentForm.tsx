@@ -111,7 +111,7 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
     price: '',
     description: '',
     image: '',
-    specs: {} as Record<string, string>,
+    specs: {} as Record<string, string | number | boolean>,
     compatibility: [] as string[],
   });
 
@@ -222,6 +222,8 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
           setCompatibilityItems(
             Array.isArray(componentData.compatibility) ? [...componentData.compatibility] : []
           );
+          console.log(componentData);
+          console.log(cleanedSpecs);
         } catch (error) {
           console.error('Failed to fetch component data:', error);
           Alert.alert('Error', 'Could not fetch component data');
@@ -234,7 +236,7 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
     }
   }, [componentId, componentType, isEditing]);
 
-  const handleSpecChange = (key: string, value: string) => {
+  const handleSpecChange = (key: string, value: string | boolean | number) => {
     setFormData((prev) => ({
       ...prev,
       specs: {
@@ -316,6 +318,8 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
     }
 
     try {
+      const { specs, compatibility, ...restFormData } = formData;
+
       const classifyFunction = componentUtils[`classify${componentType}Purpose`];
       const calculateScoreFunction = componentUtils[`calculate${componentType}Score`];
 
@@ -328,18 +332,16 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
       }
 
       const newFormData = {
-        ...formData,
-        specs: updatedSpecs,
+        ...restFormData,
+        ...updatedSpecs,
       };
-
-      console.log(newFormData);
 
       const api = apiMap[componentType];
       if (isEditing && componentId) {
         await api.update(componentId, newFormData);
         Alert.alert('Success', `${componentType} component "${formData.name}" has been updated.`);
       } else {
-        await api.create(formData);
+        await api.create(newFormData);
         Alert.alert('Success', `${componentType} component "${formData.name}" has been added.`);
       }
       router.back(); // Go back after success
@@ -430,20 +432,15 @@ const ComponentForm = ({ componentType, componentId, isEditing = false }: Compon
                       <Text style={styles.specKey}>{key}</Text>
                       {inputType === 'boolean' ? (
                         <Switch
-                          value={formData.specs[key] === 'true'}
-                          onValueChange={(val) => handleSpecChange(key, val.toString())}
+                          value={formData.specs[key] === true}
+                          onValueChange={(val) => handleSpecChange(key, val)}
                         />
                       ) : (
                         <TextInput
                           style={styles.specInput}
                           placeholder={`Enter ${key}`}
                           value={String(formData.specs[key] ?? '')}
-                          onChangeText={(text) =>
-                            handleSpecChange(
-                              key,
-                              inputType === 'number' ? text.replace(/[^0-9.]/g, '') : text
-                            )
-                          }
+                          onChangeText={(text) => handleSpecChange(key, text)}
                           keyboardType={inputType === 'number' ? 'numeric' : 'default'}
                         />
                       )}
